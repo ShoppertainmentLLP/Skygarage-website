@@ -18,8 +18,8 @@
       --text: #161412;
       --muted: #68605a;
       --dim: #8b8178;
-      --bronze: #a9782b;
-      --bronze-soft: #c9943e;
+      --bronze: #D4AF37;
+      --bronze-soft: #D4AF37;
       --line: rgba(22, 20, 18, 0.12);
       --glass: rgba(255, 255, 255, 0.72);
       --radius: 4px;
@@ -391,7 +391,7 @@
       display: grid;
       place-items: center;
       color: var(--bronze);
-      border: 1px solid rgba(197, 160, 89, 0.4);
+      border: 1px solid rgba(212, 175, 55, 0.4);
       transform: rotate(45deg);
     }
 
@@ -441,6 +441,7 @@
       inset: 0;
       z-index: -3;
       filter: grayscale(0.2) brightness(0.98);
+      height: 58%;
       transition: transform 800ms ease, filter 500ms ease;
     }
 
@@ -469,10 +470,14 @@
     }
 
     .service-card-content {
-      min-height: 430px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 42%;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: flex-start;
       padding: 28px;
     }
 
@@ -527,8 +532,8 @@
 
     .tab-button:hover,
     .tab-button.active {
-      border-color: rgba(197, 160, 89, 0.58);
-      background: rgba(197, 160, 89, 0.08);
+      border-color: rgba(212, 175, 55, 0.58);
+      background: rgba(212, 175, 55, 0.08);
       transform: translateX(4px);
     }
 
@@ -538,7 +543,7 @@
       display: grid;
       place-items: center;
       color: var(--bronze);
-      border: 1px solid rgba(197, 160, 89, 0.35);
+      border: 1px solid rgba(212, 175, 55, 0.35);
     }
 
     .tab-button strong {
@@ -582,7 +587,7 @@
     .panel-body {
       padding: 34px;
       background:
-        linear-gradient(135deg, rgba(197, 160, 89, 0.12), transparent 40%),
+        linear-gradient(135deg, rgba(212, 175, 55, 0.12), transparent 40%),
         var(--surface-2);
     }
 
@@ -790,8 +795,8 @@
       justify-content: flex-end;
       color: var(--text);
       padding: 26px;
-      border: 1px solid rgba(22, 20, 18, 0.12);
-      background: var(--offering-image) center / cover;
+      border: 1px solid rgba(22, 20, 18, 0.18);
+      background: var(--surface-2);
       isolation: isolate;
       box-shadow: 0 18px 48px rgba(45, 36, 24, 0.08);
     }
@@ -799,17 +804,21 @@
     .offering::before {
       content: "";
       position: absolute;
-      inset: 0;
+      inset: auto 0 0;
+      height: 42%;
       z-index: -1;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(251, 250, 247, 0.9)),
-        rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(22, 20, 18, 0.1);
     }
 
     .offering::after {
       content: "";
       position: absolute;
-      inset: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 58%;
       z-index: -2;
       background: var(--offering-image) center / cover;
       filter: grayscale(0.2) brightness(1.02);
@@ -817,7 +826,7 @@
     }
 
     .offering:hover::after {
-      transform: scale(1.08);
+      transform: scale(1.04);
       filter: grayscale(0) brightness(1.08);
     }
 
@@ -885,8 +894,8 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(197, 160, 89, 0.16), transparent 46%),
-        radial-gradient(circle at 82% 18%, rgba(197, 160, 89, 0.16), transparent 30%);
+        linear-gradient(135deg, rgba(212, 175, 55, 0.16), transparent 46%),
+        radial-gradient(circle at 82% 18%, rgba(212, 175, 55, 0.16), transparent 30%);
       opacity: 0;
       pointer-events: none;
       transition: opacity 320ms ease;
@@ -894,9 +903,9 @@
 
     .review:hover {
       transform: translateY(-8px);
-      border-color: rgba(197, 160, 89, 0.48);
+      border-color: rgba(212, 175, 55, 0.48);
       background: #ffffff;
-      box-shadow: 0 24px 64px rgba(45, 36, 24, 0.16), 0 0 34px rgba(197, 160, 89, 0.08);
+      box-shadow: 0 24px 64px rgba(45, 36, 24, 0.16), 0 0 34px rgba(212, 175, 55, 0.08);
     }
 
     .review:hover::before {
