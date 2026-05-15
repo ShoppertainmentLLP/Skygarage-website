@@ -108,7 +108,7 @@
       display: flex;
       align-items: center;
       gap: 28px;
-      color: var(--muted);
+      color: var(--bronze);
       font-size: 0.84rem;
       font-weight: 800;
       letter-spacing: 0.11em;
@@ -210,6 +210,16 @@
       padding: 0 18px;
       font-size: 0.78rem;
       letter-spacing: 0.11em;
+      background:
+        linear-gradient(90deg, var(--bronze) 0 50%, transparent 50% 100%);
+      background-size: 210% 100%;
+      background-position: 100% 0;
+    }
+
+    .nav-actions .button:hover {
+      color: #161412;
+      border-color: var(--bronze);
+      background-position: 0 0;
     }
 
     .button.gold {
