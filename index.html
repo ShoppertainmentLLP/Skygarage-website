@@ -43,6 +43,7 @@
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html {
@@ -1361,17 +1362,24 @@
         position: absolute;
         left: var(--edge);
         right: var(--edge);
-        top: 76px;
+        top: 72px;
         display: grid;
         gap: 0;
-        padding: 10px 18px;
+        padding: 6px 18px;
         border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(18px);
+        background: rgba(242, 237, 228, 0.98);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 12px 32px rgba(22, 20, 18, 0.12);
       }
 
       .nav.open .nav-links a {
-        padding: 16px 0;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.82rem;
+      }
+
+      .nav.open .nav-links a:last-child {
+        border-bottom: none;
       }
 
       .service-grid,
@@ -1419,7 +1427,11 @@
       }
 
       .hero h1 {
-        font-size: clamp(3.05rem, 18vw, 4.5rem);
+        font-size: clamp(2.4rem, 11vw, 4.5rem);
+      }
+
+      .hero-copy {
+        font-size: 1rem;
       }
 
       .hero-actions .button,
@@ -1438,17 +1450,52 @@
         grid-template-columns: 1fr;
       }
 
+      .offering {
+        min-height: 300px;
+      }
+
       .field.full {
         grid-column: auto;
       }
 
+      .service-card {
+        min-height: 360px;
+      }
+
       .service-panel {
         min-height: 0;
-        grid-template-rows: 300px auto;
+        grid-template-rows: 260px auto;
       }
 
       .panel-media {
-        height: 300px;
+        height: 260px;
+      }
+
+      .fleet-media,
+      .tech-media {
+        min-height: 280px;
+      }
+
+      .tab-button {
+        padding: 14px;
+        gap: 12px;
+      }
+
+      .tab-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      .review {
+        min-height: 0;
+      }
+
+      .section-title {
+        font-size: clamp(1.9rem, 6.5vw, 4.8rem);
+      }
+
+      .impact h2 {
+        font-size: clamp(1.8rem, 6vw, 4.2rem);
       }
 
       .footer-main {
@@ -1470,6 +1517,44 @@
         padding: 0;
         justify-content: center;
         border-radius: 50%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: clamp(2rem, 10vw, 2.8rem);
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .service-card {
+        min-height: 320px;
+      }
+
+      .offering {
+        min-height: 260px;
+      }
+
+      .offering h3 {
+        font-size: 1.1rem;
+      }
+
+      .offering p {
+        font-size: 0.86rem;
+      }
+
+      .step h3 {
+        font-size: 1.2rem;
+      }
+
+      .timeline {
+        gap: 40px;
+      }
+
+      .booking-panel {
+        padding: 22px 18px;
       }
     }
   </style>
