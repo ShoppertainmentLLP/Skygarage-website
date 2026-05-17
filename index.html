@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SkyGarage | Premium Car Care</title>
   <meta name="description" content="SkyGarage provides premium car service, diagnostics, repairs, detailing, and pickup-to-delivery maintenance." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://skygarage.co/" />
+  <meta property="og:title" content="SkyGarage | Premium Car Care" />
+  <meta property="og:description" content="Precision care for premium vehicles. Pickup, inspection, repair, detailing and return delivery — coordinated with clear approvals at every step." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=90" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SkyGarage | Premium Car Care" />
+  <meta name="twitter:description" content="Precision care for premium vehicles. Pickup, inspection, repair, detailing and return delivery — coordinated with clear approvals at every step." />
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=90" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -587,7 +596,11 @@
 
     .panel-media img {
       object-position: center;
-      transition: transform 800ms ease;
+      transition: transform 800ms ease, opacity 280ms ease;
+    }
+
+    .panel-media img.fading {
+      opacity: 0;
     }
 
     .service-panel:hover .panel-media img {
@@ -1104,24 +1117,108 @@
     }
 
     .footer {
-      padding: 64px 0;
+      padding: 56px 0 0;
       border-top: 1px solid var(--line);
       background: #ffffff;
     }
 
-    .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+    .footer-main {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: clamp(24px, 6vw, 80px);
+      align-items: start;
+      padding-bottom: 48px;
+    }
+
+    .footer-brand .brand-logo {
+      width: 155px;
+    }
+
+    .footer-tagline {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .footer-links-group h4 {
+      margin: 0 0 16px;
       color: var(--dim);
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
-    .footer .brand-logo {
-      width: 195px;
+    .footer-links-group nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .footer-links-group a {
+      color: var(--muted);
+      font-size: 0.88rem;
+      transition: color 200ms ease;
+    }
+
+    .footer-links-group a:hover {
+      color: var(--text);
+    }
+
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 0;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      font-size: 0.74rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a.active {
+      color: var(--text);
+    }
+
+    .nav-links a.active::after {
+      transform: scaleX(1);
+    }
+
+    .whatsapp-float {
+      position: fixed;
+      bottom: 32px;
+      left: var(--edge);
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+      height: 48px;
+      background: #25D366;
+      color: #ffffff;
+      border-radius: 2px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.32);
+      transition: transform 220ms ease, box-shadow 220ms ease;
+      white-space: nowrap;
+    }
+
+    .whatsapp-float:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(37, 211, 102, 0.44);
+      color: #ffffff;
+    }
+
+    .whatsapp-float svg {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
     }
 
     .quote-modal {
@@ -1234,6 +1331,14 @@
       .reviews {
         grid-template-columns: 1fr;
       }
+
+      .footer-main {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .footer-brand {
+        grid-column: 1 / -1;
+      }
     }
 
     @media (max-width: 720px) {
@@ -1286,9 +1391,25 @@
         height: 300px;
       }
 
-      .footer-inner {
-        align-items: flex-start;
+      .footer-main {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-bar {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .whatsapp-float span {
+        display: none;
+      }
+
+      .whatsapp-float {
+        width: 48px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
       }
     }
   </style>
@@ -1588,17 +1709,17 @@
         </div>
         <div class="reviews">
           <article class="review reveal">
-            <div class="stars">5/5</div>
+            <div class="stars">★★★★★</div>
             <p>"Booked before work, approved the quote at lunch, and the car was back at my tower before evening."</p>
             <footer><strong>Rami K.</strong><span>Customer</span></footer>
           </article>
           <article class="review reveal">
-            <div class="stars">5/5</div>
+            <div class="stars">★★★★★</div>
             <p>"The inspection photos made the repair decision easy. No calls, no guesswork, no workshop waiting room."</p>
             <footer><strong>Noura A.</strong><span>Customer</span></footer>
           </article>
           <article class="review reveal">
-            <div class="stars">5/5</div>
+            <div class="stars">★★★★★</div>
             <p>"Our company cars finally have one maintenance history and predictable service windows."</p>
             <footer><strong>Vikram S.</strong><span>Operations Manager</span></footer>
           </article>
@@ -1699,13 +1820,43 @@
   </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
-      <a class="brand" href="#home">
-        <img class="brand-logo" src="assets/skygarage_logo_current.png" alt="SkyGarage">
-      </a>
-      <span>Premium car care for busy drivers.</span>
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a class="brand" href="#home">
+            <img class="brand-logo" src="assets/skygarage_logo_current.png" alt="SkyGarage">
+          </a>
+          <p class="footer-tagline">Premium car care for busy drivers.<br>Pickup, service, delivery.</p>
+        </div>
+        <div class="footer-links-group">
+          <h4>Navigate</h4>
+          <nav>
+            <a href="#services">Services</a>
+            <a href="#protocol">Protocol</a>
+            <a href="#technology">Technology</a>
+            <a href="#contact">Contact</a>
+          </nav>
+        </div>
+        <div class="footer-links-group">
+          <h4>Reach us</h4>
+          <nav>
+            <a href="https://wa.me/971589299254" target="_blank" rel="noopener">WhatsApp</a>
+            <a href="tel:+971589299254">+971 58 929 9254</a>
+            <a href="mailto:Vansh@skygarage.co">Vansh@skygarage.co</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span>© 2025 SkyGarage. All rights reserved.</span>
+        <span>IFZA, Dubai Silicon Oasis, UAE</span>
+      </div>
     </div>
   </footer>
+
+  <a class="whatsapp-float" href="https://wa.me/971589299254?text=Hi%20SkyGarage%2C%20I%27d%20like%20to%20enquire%20about%20your%20services." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    <span>WhatsApp</span>
+  </a>
 
   <div class="quote-modal" id="quoteModal" aria-hidden="true">
     <div class="quote-dialog" role="dialog" aria-modal="true" aria-labelledby="quoteTitle">
@@ -1855,8 +2006,12 @@
         const service = serviceData[button.dataset.service];
         document.querySelectorAll(".tab-button").forEach((tab) => tab.classList.remove("active"));
         button.classList.add("active");
-        serviceImage.src = service.image;
-        serviceImage.alt = service.alt;
+        serviceImage.classList.add("fading");
+        setTimeout(() => {
+          serviceImage.src = service.image;
+          serviceImage.alt = service.alt;
+          serviceImage.classList.remove("fading");
+        }, 280);
         serviceTitle.textContent = service.title;
         serviceCopy.textContent = service.copy;
         serviceChecks.innerHTML = service.checks
@@ -1865,6 +2020,23 @@
         lucide.createIcons();
       });
     });
+
+    const navLinks = document.querySelectorAll(".nav-links a");
+    const navLinkMap = {};
+    navLinks.forEach((link) => {
+      navLinkMap[link.getAttribute("href").slice(1)] = link;
+    });
+    const sectionAlias = { "service-detail": "services" };
+    const spyObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = sectionAlias[entry.target.id] || entry.target.id;
+          navLinks.forEach((l) => l.classList.remove("active"));
+          if (navLinkMap[id]) navLinkMap[id].classList.add("active");
+        }
+      });
+    }, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+    document.querySelectorAll("main [id]").forEach((s) => spyObserver.observe(s));
 
     const revealItems = document.querySelectorAll(".reveal");
     const protocolSteps = document.querySelectorAll(".timeline .step");
