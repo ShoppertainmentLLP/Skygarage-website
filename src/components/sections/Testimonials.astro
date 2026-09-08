@@ -1,0 +1,42 @@
+---
+import Rating from '../Rating.astro';
+import { garageUrl } from '../../lib/urls';
+
+/*
+  Sheet item 8 asks for a testimonial carousel. This is a scroll-snap rail rather than a
+  scripted one: it costs no JavaScript, it is swipeable on a phone and keyboard-scrollable on a
+  desktop, and it cannot hide content from a crawler the way a slide-by-slide widget does.
+
+  The quotes are real approved reviews from the database. The sheet suggested demo content;
+  using genuine ones instead is both truthful and better proof.
+*/
+interface Props {
+  reviews: { id: number; authorName: string; rating: number; comment: string; garage: { name: string; slug: string } }[];
+  class?: string;
+}
+const { reviews, class: klass = '' } = Astro.props;
+---
+
+{reviews.length > 0 && (
+  <div class={klass}>
+    <ul
+      class="-mx-5 flex snap-x snap-mandatory gap-6 overflow-x-auto px-5 pb-4 [scrollbar-width:thin]"
+      tabindex="0"
+      aria-label="Reviews from Cars911 customers"
+    >
+      {reviews.map((r) => (
+        <li class="sheet flex w-[85vw] shrink-0 snap-start flex-col p-6 sm:w-[22rem]">
+          <Rating rating={r.rating} />
+          <blockquote class="mt-4 flex-1 text-lg leading-relaxed text-white/85">“{r.comment}”</blockquote>
+          <p class="mt-5 text-[0.9375rem]">
+            <span class="font-medium">{r.authorName}</span>
+          </p>
+          <p class="mt-1 text-[0.9375rem] text-graphite">
+            Work done by <a href={garageUrl(r.garage)} class="link">{r.garage.name}</a>
+          </p>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-2 text-[0.9375rem] text-graphite">Scroll for more · every review is tied to a completed booking</p>
+  </div>
+)}

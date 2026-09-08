@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db/client';
+import { bookings, bookingStatus } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = Number(form.get('id'));
+  const status = String(form.get('status'));
+  if (id && (bookingStatus.enumValues as string[]).includes(status)) {
+    await db
+      .update(bookings)
+      .set({ status: status as (typeof bookingStatus.enumValues)[number] })
+      .where(eq(bookings.id, id));
+  }
+  return Astro.redirect('/admin/bookings/');
+}
+
+const rows = await db.query.bookings.findMany({
+  orderBy: (b, { desc }) => desc(b.createdAt),
+  limit: 100,
+});
+const [serviceNames, garageNames] = await Promise.all([
+  db.query.services.findMany().then((list) => new Map(list.map((s) => [s.id, s.name]))),
+  db.query.garages.findMany().then((list) => new Map(list.map((g) => [g.id, g.name]))),
+]);
+---
+
+<BaseLayout title="Bookings" description="Cars911 administration.">
+  <div class="spine py-10">
+    <a href="/admin/" class="text-sm font-medium text-gold-light hover:underline">Back to dashboard</a>
+    <h1 class="mt-2 title">Bookings</h1>
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full min-w-200 border-collapse bg-surface text-sm">
+        <thead>
+          <tr>
+            {['When', 'Type', 'Customer', 'Service', 'Garage', 'Slot', 'Notes', 'Status'].map((h) => (
+              <th class="border border-rule bg-surface-raise p-2.5 text-left font-medium">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((b) => (
+            <tr>
+              <td class="border border-rule p-2.5 whitespace-nowrap">{b.createdAt.toLocaleString('en-AE')}</td>
+              <td class="border border-rule p-2.5 font-semibold">
+                {b.type}{b.pickAndDrop ? ' + pick&drop' : ''}
+              </td>
+              <td class="border border-rule p-2.5">
+                <span class="font-medium">{b.name}</span>
+                <span class="block text-graphite">{b.phone}</span>
+              </td>
+              <td class="border border-rule p-2.5">{b.serviceId ? serviceNames.get(b.serviceId) : '—'}</td>
+              <td class="border border-rule p-2.5">{b.garageId ? garageNames.get(b.garageId) : 'Unassigned'}</td>
+              <td class="border border-rule p-2.5">{[b.preferredDate, b.preferredSlot].filter(Boolean).join(' ') || '—'}</td>
+              <td class="border border-rule p-2.5 max-w-60">{b.notes || '—'}</td>
+              <td class="border border-rule p-2.5">
+                <form method="POST" class="flex items-center gap-2">
+                  <input type="hidden" name="id" value={b.id} />
+                  <select name="status" class="rounded-[3px] border border-rule px-2 py-1">
+                    {bookingStatus.enumValues.map((s) => (
+                      <option value={s} selected={s === b.status}>{s}</option>
+                    ))}
+                  </select>
+                  <button type="submit" class="font-medium text-gold-light hover:underline">Save</button>
+                </form>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</BaseLayout>

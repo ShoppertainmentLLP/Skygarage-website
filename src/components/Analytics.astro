@@ -1,0 +1,41 @@
+---
+/*
+  Search Console / Bing verification and GA4, all switched on by environment variables and
+  therefore inert until someone sets them. These are PUBLIC_* values, which Vite inlines at
+  build time — they are identifiers, not secrets, and they must never be read from process.env
+  here or the value the build machine had would ship instead of the host's.
+
+  GA4 is loaded async and only after the page has settled, because §11.6 puts a budget on
+  INP and TBT that a tag manager will happily spend for you. Measure again after switching it
+  on: if TBT moves materially, move to a server-side or consent-gated setup rather than
+  accepting it.
+*/
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
+---
+
+{googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+{bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
+
+{ga4Id && (
+  <script is:inline define:vars={{ ga4Id }}>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', ga4Id, { send_page_view: true });
+
+    // Load the library once the page is idle so it never competes with the first paint.
+    const load = () => {
+      const tag = document.createElement('script');
+      tag.async = true;
+      tag.src = `https://www.googletagmanager.com/gtag/js?id=${ga4Id}`;
+      document.head.appendChild(tag);
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(load, { timeout: 4000 });
+    else addEventListener('load', () => setTimeout(load, 1200));
+  </script>
+)}

@@ -1,0 +1,30 @@
+---
+/*
+  "What's Included" and "Why Cars911" are the same shape — a titled point with a sentence under
+  it — so they share a component and differ only in heading and column count.
+*/
+interface Props {
+  /** Omit where the section already has a heading above the component. */
+  heading?: string;
+  intro?: string;
+  items: { title: string; detail: string }[];
+  columns?: 2 | 3;
+  class?: string;
+}
+const { heading, intro, items, columns = 2, class: klass = '' } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class={klass}>
+    {heading && <h2 class="title">{heading}</h2>}
+    {intro && <p class="lede measure mt-4">{intro}</p>}
+    <ul class={`mt-8 grid gap-x-10 gap-y-8 ${columns === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      {items.map((item) => (
+        <li class="border-t border-rule pt-5">
+          <h3 class="subtitle">{item.title}</h3>
+          <p class="mt-2 leading-relaxed text-graphite">{item.detail}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

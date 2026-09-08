@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #fbfaf7; color: #000; font-family: 'Barlow', 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+    a { color: #000; text-decoration: none; } a:hover { color: #e4572e; }
+    .cond { font-family: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif; }
+    .row { animation: arrive 0.45s ease-out both; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .dot { animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    @media (prefers-reduced-motion: reduce) { .row, .dot { animation: none; } }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 2240px; background: #fbfaf7;">
+
+  <!-- header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 64px; border-bottom: 2px solid #000;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img src="emblem.png" alt="" style="height: 32px; width: auto;">
+      <span class="cond" style="font-size: 30px; font-weight: 700; letter-spacing: 0.01em; line-height: 1;">Cars911</span>
+    </div>
+    <div style="display: flex; gap: 28px; font-size: 17px; font-weight: 500;">
+      <a href="#">Book a service</a><a href="#">Services</a><a href="#">Locations</a><a href="#">Garages</a><a href="#">Resources</a><a href="#">About</a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500;"><span class="dot" style="width: 10px; height: 10px; border-radius: 50%; background: #1f9d55;"></span>14 garages online</span>
+      <a href="#" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; background: #e4572e; color: #fbfaf7; font-weight: 600; font-size: 15px;">Roadside help</a>
+    </div>
+  </div>
+
+  <!-- hero -->
+  <div style="padding: 72px 64px 40px; display: flex; flex-direction: column; gap: 28px;">
+    <h1 class="cond" style="margin: 0; font-size: 128px; line-height: 0.9; font-weight: 700; letter-spacing: -0.01em; max-width: 1200px; text-wrap: balance;">Your car's problem, sent to every garage that can fix it.</h1>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+      <p style="margin: 0; font-size: 21px; line-height: 1.45; max-width: 46ch; color: #2b2925;">Describe the job once. Verified garages in your area answer with a price, a warranty and a turnaround, one after another, on your phone. You pick.</p>
+      <a href="#" style="display: inline-flex; align-items: center; height: 56px; padding: 0 28px; background: #000; color: #fbfaf7; font-weight: 600; font-size: 18px; flex: none;">Send my request</a>
+    </div>
+  </div>
+
+  <!-- the board -->
+  <div style="padding: 24px 64px 0;">
+    <div style="border-top: 2px solid #000;">
+      <div style="display: grid; grid-template-columns: 120px 1fr 200px 160px 160px; gap: 0; padding: 12px 0; border-bottom: 1px solid #000; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: #5c584f;">
+        <div>Time</div><div>Request 04127. Front brake pads and discs, Nissan Patrol 2019, Al Quoz</div><div>Price</div><div>Warranty</div><div>Ready</div>
+      </div>
+
+      <div class="row" style="animation-delay: 0.3s; display: grid; grid-template-columns: 120px 1fr 200px 160px 160px; align-items: center; padding: 16px 0; border-bottom: 1px solid #d9d5cc; font-size: 17px;">
+        <div style="color: #5c584f;">17:02</div><div>Sent to 6 garages that handle brakes in Al Quoz</div><div></div><div></div><div></div>
+      </div>
+      <div class="row" style="animation-delay: 1.1s; display: grid; grid-template-columns: 120px 1fr 200px 160px 160px; align-items: center; padding: 16px 0; border-bottom: 1px solid #d9d5cc; font-size: 17px;">
+        <div style="color: #5c584f;">17:09</div><div style="font-weight: 600;">Apex Auto Care <span style="font-weight: 400; color: #5c584f;">Premium, Al Quoz</span></div><div class="cond" style="font-size: 40px; font-weight: 600; line-height: 1;">AED 1,240</div><div>12 months</div><div>Tomorrow</div>
+      </div>
+      <div class="row" style="animation-delay: 1.9s; display: grid; grid-template-columns: 120px 1fr 200px 160px 160px; align-items: center; padding: 16px 0; border-bottom: 1px solid #d9d5cc; font-size: 17px;">
+        <div style="color: #5c584f;">17:14</div><div style="font-weight: 600;">Desert Line Garage <span style="font-weight: 400; color: #5c584f;">Verified, Al Qusais</span></div><div class="cond" style="font-size: 40px; font-weight: 600; line-height: 1;">AED 980</div><div>6 months</div><div>Same day</div>
+      </div>
+      <div class="row" style="animation-delay: 2.7s; display: grid; grid-template-columns: 120px 1fr 200px 160px 160px; align-items: center; padding: 16px 0; border-bottom: 1px solid #d9d5cc; font-size: 17px;">
+        <div style="color: #5c584f;">17:21</div><div style="font-weight: 600;">Gulf Star Motors <span style="font-weight: 400; color: #5c584f;">Verified, Sharjah</span></div><div class="cond" style="font-size: 40px; font-weight: 600; line-height: 1;">AED 860</div><div>6 months</div><div>2 days</div>
+      </div>
+      <div class="row" style="animation-delay: 3.3s; display: grid; grid-template-columns: 120px 1fr; align-items: center; padding: 16px 0; border-bottom: 1px dashed #b8b3a7; font-size: 17px; color: #5c584f;">
+        <div></div><div>Waiting on 3 more. Quotes usually land within the hour during working hours.</div>
+      </div>
+    </div>
+    <p style="margin: 16px 0 0; font-size: 14px; color: #5c584f;">Sample request. Prices shown are examples; real quotes come from garages that handle your job in your area.</p>
+  </div>
+
+  <!-- proof line -->
+  <div style="padding: 72px 64px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px;">
+    <div style="border-top: 2px solid #000; padding-top: 16px; display: flex; flex-direction: column; gap: 6px;"><span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">100-point audit</span><span style="font-size: 16px; color: #2b2925; line-height: 1.5;">Every garage is inspected before it can quote you.</span></div>
+    <div style="border-top: 2px solid #000; padding-top: 16px; display: flex; flex-direction: column; gap: 6px;"><span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">Warranty in writing</span><span style="font-size: 16px; color: #2b2925; line-height: 1.5;">The months are on the quote, not promised on the phone.</span></div>
+    <div style="border-top: 2px solid #000; padding-top: 16px; display: flex; flex-direction: column; gap: 6px;"><span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">Free for car owners</span><span style="font-size: 16px; color: #2b2925; line-height: 1.5;">No account, no card, no obligation to book.</span></div>
+  </div>
+
+  <!-- services -->
+  <div style="padding: 96px 64px 0; display: flex; flex-direction: column; gap: 28px;">
+    <h2 class="cond" style="margin: 0; font-size: 64px; font-weight: 700; line-height: 0.95;">What does your car need?</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; border-top: 2px solid #000;">
+      <div style="display: flex; flex-direction: column; padding-top: 18px;">
+        <span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">Maintenance</span>
+        <span style="font-size: 15px; color: #5c584f; margin: 8px 0 12px;">Servicing and inspections that keep your car reliable.</span>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Minor service</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Major service</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Oil and fluids</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Pre-purchase inspection</a>
+        <a href="#" style="padding: 14px 0 0; font-size: 15px; font-weight: 600; color: #e4572e;">All maintenance services</a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding-top: 18px;">
+        <span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">Repair</span>
+        <span style="font-size: 15px; color: #5c584f; margin: 8px 0 12px;">Engine, transmission, suspension, AC and brakes.</span>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Engine repair</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Transmission repair</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">AC repair</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Brake repair</a>
+        <a href="#" style="padding: 14px 0 0; font-size: 15px; font-weight: 600; color: #e4572e;">All repair services</a>
+      </div>
+      <div style="display: flex; flex-direction: column; padding-top: 18px;">
+        <span class="cond" style="font-size: 30px; font-weight: 600; line-height: 1;">Enhancements</span>
+        <span style="font-size: 15px; color: #5c584f; margin: 8px 0 12px;">Tyres, detailing, protection and styling.</span>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Tyres and wheels</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Body shop</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Ceramic coating and PPF</a>
+        <a href="#" style="padding: 10px 0; border-top: 1px solid #d9d5cc; font-size: 17px;">Wrapping and tinting</a>
+        <a href="#" style="padding: 14px 0 0; font-size: 15px; font-weight: 600; color: #e4572e;">All enhancement services</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- garages -->
+  <div style="padding: 96px 64px 0; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <h2 class="cond" style="margin: 0; font-size: 64px; font-weight: 700; line-height: 0.95;">Garages on the board</h2>
+      <a href="#" style="font-size: 16px; font-weight: 600; color: #e4572e;">Browse all garages</a>
+    </div>
+    <div style="border-top: 2px solid #000;">
+      <div style="display: grid; grid-template-columns: 1fr 200px 160px 160px 160px; align-items: center; padding: 18px 0; border-bottom: 1px solid #d9d5cc;">
+        <div><span style="font-weight: 600; font-size: 19px;">Apex Auto Care</span><br><span style="font-size: 15px; color: #5c584f;">German-car specialists in Al Quoz with dealer-level diagnostics.</span></div>
+        <div style="font-size: 16px;">Premium</div><div style="font-size: 16px;">12 months</div><div style="font-size: 16px;">24h turnaround</div><div style="font-size: 16px;">4.5 (2)</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 200px 160px 160px 160px; align-items: center; padding: 18px 0; border-bottom: 1px solid #d9d5cc;">
+        <div><span style="font-weight: 600; font-size: 19px;">Desert Line Garage</span><br><span style="font-size: 15px; color: #5c584f;">All-makes workshop in Al Qusais, honest pricing, same-day minor services.</span></div>
+        <div style="font-size: 16px;">Verified</div><div style="font-size: 16px;">6 months</div><div style="font-size: 16px;">8h turnaround</div><div style="font-size: 16px;">5.0 (1)</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 200px 160px 160px 160px; align-items: center; padding: 18px 0; border-bottom: 1px solid #d9d5cc;">
+        <div><span style="font-weight: 600; font-size: 19px;">RoadRunner Mobile Mechanics</span><br><span style="font-size: 15px; color: #5c584f;">Batteries, minor services and diagnostics at your doorstep, all of Dubai.</span></div>
+        <div style="font-size: 16px;">Mobile</div><div style="font-size: 16px;">3 months</div><div style="font-size: 16px;">2h turnaround</div><div style="font-size: 16px;">4.8 (6)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- emirates -->
+  <div style="padding: 96px 64px 0; display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="cond" style="margin: 0; font-size: 64px; font-weight: 700; line-height: 0.95;">Covering every emirate</h2>
+    <div class="cond" style="display: flex; flex-wrap: wrap; gap: 12px 36px; font-size: 34px; font-weight: 600; line-height: 1; padding-top: 8px;">
+      <a href="#">Dubai</a><a href="#">Abu Dhabi</a><a href="#">Sharjah</a><a href="#">Ajman</a><a href="#">Ras Al Khaimah</a><a href="#">Fujairah</a><a href="#">Umm Al Quwain</a><a href="#">Al Ain</a>
+    </div>
+  </div>
+
+  <!-- rsa + footer -->
+  <div style="margin: 96px 0 0; background: #e4572e; color: #fbfaf7; padding: 40px 64px; display: flex; align-items: center; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span class="cond" style="font-size: 44px; font-weight: 700; line-height: 1;">Broken down right now?</span>
+      <span style="font-size: 17px;">Roadside assistance anywhere in the UAE. One message, and a recovery truck is on its way.</span>
+    </div>
+    <a href="#" style="display: inline-flex; align-items: center; height: 52px; padding: 0 24px; background: #fbfaf7; color: #e4572e; font-weight: 600; font-size: 17px; flex: none;">WhatsApp roadside help</a>
+  </div>
+  <div style="padding: 28px 64px 36px; display: flex; justify-content: space-between; font-size: 14px; color: #5c584f; border-top: 2px solid #000;">
+    <span>Cars911. Trust. Choose. Cruise.</span>
+    <div style="display: flex; gap: 24px;"><a href="#" style="color: #5c584f;">Privacy</a><a href="#" style="color: #5c584f;">Terms</a><a href="#" style="color: #5c584f;">Warranty policy</a><a href="#" style="color: #5c584f;">Contact</a></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

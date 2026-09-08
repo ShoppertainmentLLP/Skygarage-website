@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { STEPS } from '../../lib/how-it-works';
+---
+
+<BaseLayout
+  title="How Cars911 works — from request to review"
+  description="How the Cars911 aggregator works: describe the job, receive garage quotes, compare warranties and ratings, book, and review the work."
+>
+  <PageHead trail={[['/about/', 'About'], ['/about/how-it-works/', 'How it works']]} title="How it works">
+    One request sets the whole thing in motion.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <!-- Genuinely a sequence, so it is numbered; the rule down the left carries the order. -->
+    <ol class="mt-12 border-t border-rule">
+      {STEPS.map((step, i) => (
+        <li class="flex gap-6 border-b border-rule py-6 sm:gap-10">
+          <span class="tabular w-6 shrink-0 text-graphite">{i + 1}</span>
+          <div>
+            <h2 class="subtitle">{step.title}</h2>
+            <p class="mt-2 leading-relaxed text-graphite">{step.long}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <a href="/book-a-service/" class="btn btn-primary mt-10">Start with a free quote</a>
+  </div>
+
+  <CtaBand heading="Ready to start a request?">Three short steps, no account and no card.</CtaBand>
+</BaseLayout>

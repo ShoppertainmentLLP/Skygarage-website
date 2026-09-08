@@ -1,0 +1,67 @@
+---
+import CtaPair from './CtaPair.astro';
+import { SITE } from '../lib/site';
+
+interface Props {
+  trail: [string, string][];
+  title: string;
+  /** Pages that already lead with their own action, like the forms, suppress the pair. */
+  cta?: boolean;
+  bookHref?: string;
+  bookLabel?: string;
+}
+
+const { trail, title, cta = true, bookHref, bookLabel } = Astro.props;
+
+/*
+  BreadcrumbList lives here because every page opens with this component — one definition
+  keeps the markup and the schema from drifting apart (audit §11.5). The current page is the
+  last crumb and, like the Home crumb, always carries a resolvable URL.
+*/
+const crumbs = [['/', 'Home'] as [string, string], ...trail];
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map(([href, name], i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name,
+    item: new URL(href || Astro.url.pathname, SITE.url).href,
+  })),
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+<!-- Every page opens the way the ads do: the title large, the action beside it. -->
+<section class="border-b border-rule">
+  <nav aria-label="Breadcrumb" class="spine pt-7 text-[0.9375rem] text-white/50">
+    <ol class="flex flex-wrap items-center gap-2">
+      <li><a href="/" class="hover:text-gold-light">Home</a></li>
+      {trail.map(([href, label], i) => (
+        <li class="flex items-center gap-2">
+          <span class="text-gold/50" aria-hidden="true">/</span>
+          {i === trail.length - 1 ? (
+            <span aria-current="page" class="text-white">{label}</span>
+          ) : (
+            <a href={href} class="hover:text-gold-light">{label}</a>
+          )}
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="spine pt-8 pb-14">
+    <div class="grid gap-8 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <h1 class="title">{title}</h1>
+      </div>
+      <div class="flex flex-col justify-end lg:col-span-5">
+        {Astro.slots.has('default') && (
+          <p class="lede"><slot /></p>
+        )}
+        {cta && <CtaPair tone="dark" class="mt-6" bookHref={bookHref} bookLabel={bookLabel} />}
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from '../components/PageHead.astro';
+import QuoteForm from '../islands/QuoteForm.svelte';
+import { getCategoriesWithServices, getEmirates } from '../lib/queries';
+
+/*
+  The canonical booking entry (Action Doc p4). The /book/* pages are specialised siblings —
+  appointment, emergency, corporate, packages, compare — and all of them link back here.
+  Prefill arrives as ?service= / ?location=; the canonical stays the bare path so the
+  prefilled variants never index separately (§8.2: no query strings on indexable pages).
+*/
+const [categories, emirates] = await Promise.all([getCategoriesWithServices(), getEmirates()]);
+const serviceOptions = categories.flatMap((c) =>
+  c.services.map((s) => ({ id: s.id, name: s.name, group: c.name })),
+);
+const locationOptions = emirates.map((l) => ({ id: l.id, name: l.name }));
+
+const preselected = Number(Astro.url.searchParams.get('service')) || null;
+const validPreselect = serviceOptions.some((s) => s.id === preselected) ? preselected : null;
+const preLocation = Number(Astro.url.searchParams.get('location')) || null;
+const validLocation = locationOptions.some((l) => l.id === preLocation) ? preLocation : null;
+---
+
+<BaseLayout
+  title="Book a Car Service in Dubai — get garage quotes"
+  description="Book a car service in Dubai in three steps. Describe the job once and verified garages come back with real prices. Free, fast, no obligation."
+  canonicalPath="/book-a-service/"
+>
+  <PageHead cta={false} trail={[['/book-a-service/', 'Book a car service']]} title="Book a Car Service in Dubai">
+    Three quick steps. Your request goes to garages that actually do this job in your area, and
+    they come back to you with prices.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <div class="mt-8">
+      <QuoteForm
+        client:load
+        services={serviceOptions}
+        locations={locationOptions}
+        preselectedServiceId={validPreselect}
+        preselectedLocationId={validLocation}
+      />
+    </div>
+  </div>
+</BaseLayout>

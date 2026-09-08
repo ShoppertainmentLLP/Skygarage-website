@@ -1,0 +1,37 @@
+---
+import { locationUrl } from '../../lib/urls';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { getEmirates } from '../../lib/queries';
+
+const emirates = await getEmirates();
+---
+
+<BaseLayout
+  title="Car garages across the UAE — find workshops near you"
+  description="Cars911's verified garage network covers all seven emirates and Al Ain. Choose your location to see workshops, mobile mechanics and services near you."
+>
+  <PageHead trail={[['/locations/', 'Locations']]} title="Locations">
+    Verified garages and mobile mechanics across the Emirates. Pick where you are — quotes and
+    bookings work the same everywhere.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <ul class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {emirates.map((l) => (
+        <li class="rounded-[3px] border border-rule bg-surface p-5">
+          <h2 class="subtitle">
+            <a href={locationUrl(l)} class="hover:text-gold-light">{l.name}</a>
+          </h2>
+          <p class="mt-2 text-sm leading-relaxed text-graphite">{l.blurb}</p>
+          <a href={locationUrl(l)} class="mt-3 inline-block text-sm font-medium text-gold-light hover:underline">
+            Garages in {l.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <CtaBand heading="Garages near you, quoting today.">Coverage works the same in every emirate.</CtaBand>
+</BaseLayout>

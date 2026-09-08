@@ -1,0 +1,5 @@
+---
+/* The quote form now lives at the spec's canonical booking URL; the query string carries over. */
+const { search } = Astro.url;
+return Astro.redirect(`/book-a-service/${search}`, 301);
+---

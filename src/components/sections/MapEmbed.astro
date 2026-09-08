@@ -1,0 +1,48 @@
+---
+/*
+  Google's map as a facade: a static panel that only loads the iframe when someone asks for it.
+  A cold Maps embed costs roughly 900 KB and a chunk of main-thread time, which would undo the
+  INP and LCP budget in §11.6 on every page it appears on — and almost nobody interacts with it.
+*/
+interface Props {
+  query: string;
+  label: string;
+  class?: string;
+}
+const { query, label, class: klass = '' } = Astro.props;
+const src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+const link = `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
+---
+
+<div class={`relative overflow-hidden rounded-[3px] border border-rule bg-surface ${klass}`} data-map>
+  <div class="flex aspect-[16/7] flex-col items-start justify-end gap-4 p-6 sm:p-8">
+    <div>
+      <p class="title-sm">{label}</p>
+      <p class="mt-2 max-w-md text-[0.9375rem] text-graphite">
+        Garages, mobile mechanics and roadside units cover this whole area. Open the map to see
+        where they are.
+      </p>
+    </div>
+    <button type="button" class="btn btn-quiet-dark" data-map-load>Show map</button>
+    <noscript>
+      <a href={link} class="link" rel="noopener">Open in Google Maps</a>
+    </noscript>
+  </div>
+</div>
+
+<script is:inline define:vars={{ src, label }}>
+  document.currentScript.previousElementSibling.querySelector('[data-map-load]').addEventListener(
+    'click',
+    (event) => {
+      const panel = event.currentTarget.closest('[data-map]');
+      const frame = document.createElement('iframe');
+      frame.src = src;
+      frame.title = label;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer-when-downgrade';
+      frame.className = 'aspect-[16/7] w-full border-0';
+      panel.replaceChildren(frame);
+    },
+    { once: true },
+  );
+</script>

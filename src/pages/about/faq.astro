@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import FaqAccordion from '../../components/FaqAccordion.astro';
+import { SITE } from '../../lib/site';
+import { GENERAL_FAQS, faqSchema } from '../../lib/faqs';
+
+const schema = [faqSchema(GENERAL_FAQS)];
+---
+
+<BaseLayout
+  title="Frequently asked questions"
+  description={`How ${SITE.name} works, what it costs, how garages are verified, and what happens after you request quotes.`}
+  schema={schema}
+>
+  <PageHead trail={[['/about/', 'About'], ['', 'FAQ']]} title="Frequently asked questions">
+    The things people ask before they send a first request.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <FaqAccordion faqs={GENERAL_FAQS} />
+  </div>
+
+  <CtaBand heading="Still deciding?">
+    A request costs nothing and commits you to nothing.
+  </CtaBand>
+</BaseLayout>

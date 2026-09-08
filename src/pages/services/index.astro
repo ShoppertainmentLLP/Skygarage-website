@@ -1,0 +1,46 @@
+---
+import { serviceUrl } from '../../lib/urls';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { getCategoriesWithServices } from '../../lib/queries';
+import { priceLabel } from '../../lib/site';
+
+const categories = await getCategoriesWithServices();
+---
+
+<BaseLayout
+  title="Car services in the UAE — maintenance, repair and enhancements"
+  description="Every service in the Cars911 network: routine maintenance, mechanical repair, and enhancement work — each quoted by multiple verified garages."
+>
+  <PageHead trail={[['/services/', 'Services']]} title="Services">
+    Whatever the job, the process is the same: request once, get multiple quotes, choose with
+    confidence.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    {categories.map((c) => (
+      <section class="mt-12">
+        <h2 class="title-sm">
+          <a href={`/services/${c.slug}/`} class="hover:text-gold-light">{c.name}</a>
+        </h2>
+        <p class="mt-1 max-w-prose text-graphite">{c.tagline}</p>
+        <ul class="mt-4 divide-y divide-rule rounded-[3px] border border-rule bg-surface">
+          {c.services.map((s) => (
+            <li>
+              <a
+                href={serviceUrl(s)}
+                class="flex flex-wrap items-baseline justify-between gap-2 px-5 py-4 hover:bg-surface"
+              >
+                <span class="font-medium">{s.name}</span>
+                <span class="text-sm text-graphite">{priceLabel(s.priceFromAed, s.priceToAed)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <CtaBand heading="Not sure which service you need?">Describe the problem in your own words and let the garages tell you.</CtaBand>
+</BaseLayout>

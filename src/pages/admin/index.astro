@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db/client';
+import { bookings, corporateLeads, partnerLeads, quoteRequests, reviews } from '../../db/schema';
+import { count, eq } from 'drizzle-orm';
+
+const [[quoteCount], [bookingCount], [corpCount], [partnerCount], [pendingReviews]] =
+  await Promise.all([
+    db.select({ n: count() }).from(quoteRequests).where(eq(quoteRequests.status, 'new')),
+    db.select({ n: count() }).from(bookings).where(eq(bookings.status, 'new')),
+    db.select({ n: count() }).from(corporateLeads),
+    db.select({ n: count() }).from(partnerLeads),
+    db.select({ n: count() }).from(reviews).where(eq(reviews.approved, false)),
+  ]);
+
+const cards = [
+  ['/admin/quotes/', 'Quote requests', quoteCount.n, 'new'],
+  ['/admin/bookings/', 'Bookings', bookingCount.n, 'new'],
+  ['/admin/leads/', 'Corporate leads', corpCount.n, 'total'],
+  ['/admin/leads/', 'Partner applications', partnerCount.n, 'total'],
+  ['/admin/reviews/', 'Reviews awaiting approval', pendingReviews.n, 'pending'],
+] as const;
+---
+
+<BaseLayout title="Admin dashboard" description="Cars911 administration.">
+  <div class="spine py-10">
+    <h1 class="title">Operations</h1>
+    <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map(([href, label, n, kind]) => (
+        <a href={href} class="sheet p-6 hover:border-gold">
+          <p class="title">{n}</p>
+          <p class="mt-1 font-medium">{label}</p>
+          <p class="text-sm text-graphite">{kind}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

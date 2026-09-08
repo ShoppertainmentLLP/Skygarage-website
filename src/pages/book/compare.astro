@@ -1,0 +1,114 @@
+---
+import { appointmentUrl } from '../../lib/urls';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import Rating from '../../components/Rating.astro';
+import { getActiveGarages, getRatings } from '../../lib/queries';
+import { TIER_LABELS } from '../../lib/site';
+
+const garages = await getActiveGarages();
+const ratings = await getRatings(garages.map((g) => g.id));
+
+// Selection travels in the URL (?g=slug,slug) so comparisons are shareable and crawlable.
+const selectedSlugs = (Astro.url.searchParams.get('g') ?? '')
+  .split(',')
+  .filter(Boolean)
+  .slice(0, 3);
+const selected = garages.filter((g) => selectedSlugs.includes(g.slug));
+
+const rows: [string, (g: (typeof garages)[number]) => string][] = [
+  ['Type', (g) => TIER_LABELS[g.tier]],
+  ['Price band', (g) => g.priceBand],
+  ['Warranty', (g) => (g.warrantyMonths ? `${g.warrantyMonths} months` : '—')],
+  ['Turnaround', (g) => (g.turnaroundHours ? `${g.turnaroundHours} hours` : '—')],
+  ['Services', (g) => String(g.garageServices.length)],
+  ['Areas', (g) => g.garageLocations.map((gl) => gl.location.name).join(', ')],
+];
+---
+
+<BaseLayout
+  title="Compare garages side by side"
+  description="Put up to three Cars911 garages side by side: price band, warranty, turnaround, ratings and coverage."
+>
+  <PageHead trail={[['/book/compare/', 'Compare garages']]} title="Compare garages">
+    Pick up to three garages and see how they stack up. The link updates as you choose — share it
+    with whoever helps you decide.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <form method="GET" class="sheet mt-8 p-6">
+      <fieldset>
+        <legend class="font-medium">Choose garages</legend>
+        <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {garages.map((g) => (
+            <label class="flex items-center gap-2 rounded-[3px] border border-rule px-3 py-2 has-checked:border-gold has-checked:bg-gold-wash">
+              <input
+                type="checkbox"
+                name="gpick"
+                value={g.slug}
+                checked={selectedSlugs.includes(g.slug)}
+                class="size-4 accent-gold-bright"
+              />
+              <span class="text-sm font-semibold">{g.name}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <input type="hidden" name="g" id="cmp-g" />
+      <button type="submit" class="btn btn-primary mt-4">Compare selected</button>
+    </form>
+
+    {selected.length > 0 && (
+      <div class="mt-10 overflow-x-auto">
+        <table class="w-full min-w-140 border-collapse text-[0.9375rem]">
+          <thead>
+            <tr>
+              <th class="border-y border-rule py-4 pr-6 text-left font-normal text-graphite">Garage</th>
+              {selected.map((g) => (
+                <th class="border-y border-rule py-4 pr-6 text-left">
+                  <a href={`/garages/${g.slug}/`} class="text-base hover:text-gold-light">{g.name}</a>
+                  <div class="mt-1 font-normal"><Rating rating={ratings.get(g.id)?.avg ?? null} count={ratings.get(g.id)?.count} /></div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([label, get]) => (
+              <tr>
+                <th class="border-b border-rule py-3.5 pr-6 text-left font-normal text-graphite">{label}</th>
+                {selected.map((g) => (
+                  <td class="border-b border-rule py-3.5 pr-6">{get(g)}</td>
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <th class="border-b border-rule py-3.5 pr-6 text-left font-normal text-graphite">Book</th>
+              {selected.map((g) => (
+                <td class="border-b border-rule py-3.5 pr-6">
+                  <a href={appointmentUrl({ garage: g.id })} class="font-medium text-gold-light hover:underline">
+                    Book {g.name}
+                  </a>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+
+  <script>
+    // Collapse the checked boxes into the single ?g= parameter the page reads.
+    document.querySelector('form[method="GET"]')?.addEventListener('submit', (e) => {
+      const form = e.currentTarget as HTMLFormElement;
+      const picked = [...form.querySelectorAll<HTMLInputElement>('input[name="gpick"]:checked')]
+        .slice(0, 3)
+        .map((el) => el.value);
+      (form.querySelector('#cmp-g') as HTMLInputElement).value = picked.join(',');
+      form.querySelectorAll<HTMLInputElement>('input[name="gpick"]').forEach((el) => (el.disabled = true));
+    });
+  </script>
+
+  <CtaBand heading="Made your choice?">Book the garage you picked, or ask all of them to quote first.</CtaBand>
+</BaseLayout>

@@ -1,0 +1,24 @@
+---
+/* The job from booking to handover, numbered because it genuinely is a sequence. */
+interface Props {
+  heading: string;
+  items: { title: string; detail: string }[];
+  class?: string;
+}
+const { heading, items, class: klass = '' } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class={klass}>
+    <h2 class="title">{heading}</h2>
+    <ol class="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((item, i) => (
+        <li class="border-t border-rule pt-5">
+          <span class="tabular text-[0.9375rem] text-gold-light">Step {i + 1}</span>
+          <h3 class="subtitle mt-3">{item.title}</h3>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-graphite">{item.detail}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}

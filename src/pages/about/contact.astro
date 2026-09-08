@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { telLink, waLink, phoneDisplay } from '../../lib/site';
+---
+
+<BaseLayout
+  title="Contact Cars911"
+  description="Reach Cars911 by WhatsApp, phone or the channels below — for bookings, partnerships, press or anything else."
+>
+  <PageHead trail={[['/about/', 'About'], ['/about/contact/', 'Contact']]} title="Contact us">
+    Fastest first: WhatsApp answers within minutes in working hours.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <div class="mt-8 grid gap-5 sm:grid-cols-2">
+      <a href={waLink('Hi Cars911, I have a question.')} class="sheet p-6 hover:border-gold">
+        <h2 class="subtitle">WhatsApp</h2>
+        <p class="mt-1 text-graphite">Bookings, quotes, anything urgent.</p>
+        <p class="mt-3 font-medium text-gold-light">Message us</p>
+      </a>
+      <a href={telLink()} class="sheet p-6 hover:border-gold">
+        <h2 class="subtitle">Phone</h2>
+        <p class="mt-1 text-graphite">Emergencies and everything else.</p>
+        <p class="mt-3 font-medium text-gold-light">{phoneDisplay()}</p>
+      </a>
+      <a href="/partners/join/" class="sheet p-6 hover:border-gold">
+        <h2 class="subtitle">Garage partnerships</h2>
+        <p class="mt-1 text-graphite">Join the network as a workshop or mobile mechanic.</p>
+        <p class="mt-3 font-medium text-gold-light">Apply here</p>
+      </a>
+      <a href="/book/corporate/" class="sheet p-6 hover:border-gold">
+        <h2 class="subtitle">Fleet &amp; corporate</h2>
+        <p class="mt-1 text-graphite">Servicing for company vehicles at scale.</p>
+        <p class="mt-3 font-medium text-gold-light">Talk to the fleet team</p>
+      </a>
+    </div>
+  </div>
+
+  <CtaBand heading="Prefer to just get started?">One request reaches every garage that can do the job.</CtaBand>
+</BaseLayout>

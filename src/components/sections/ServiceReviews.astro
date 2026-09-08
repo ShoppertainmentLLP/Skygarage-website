@@ -1,0 +1,48 @@
+---
+import Rating from '../Rating.astro';
+import { garageUrl } from '../../lib/urls';
+import type { ReviewSummary } from '../../lib/queries';
+
+/*
+  Reviews left about this specific job. The summary drives the AggregateRating markup on the
+  page, so it is built from these rows and nothing else — aggregating a garage's unrelated
+  reviews into a service rating is what gets rich results pulled.
+*/
+interface Props {
+  heading: string;
+  reviews: { id: number; authorName: string; rating: number; comment: string; createdAt: Date; garage: { name: string; slug: string } }[];
+  summary: ReviewSummary | null;
+  class?: string;
+}
+const { heading, reviews, summary, class: klass = '' } = Astro.props;
+
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+---
+
+{reviews.length > 0 && (
+  <section class={klass}>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">{heading}</h2>
+      {summary && (
+        <p class="flex items-center gap-3 text-[0.9375rem] text-graphite">
+          <Rating rating={summary.avg} count={summary.count} />
+        </p>
+      )}
+    </div>
+    <ul class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {reviews.slice(0, 6).map((r) => (
+        <li class="sheet flex flex-col p-6">
+          <Rating rating={r.rating} />
+          <p class="mt-4 flex-1 leading-relaxed text-graphite">“{r.comment}”</p>
+          <p class="mt-5 text-[0.9375rem]">
+            <span class="font-medium">{r.authorName}</span>
+            <span class="text-graphite"> · {fmt(r.createdAt)}</span>
+          </p>
+          <p class="mt-1 text-[0.9375rem] text-graphite">
+            Work done by <a href={garageUrl(r.garage)} class="link">{r.garage.name}</a>
+          </p>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

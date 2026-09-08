@@ -1,0 +1,50 @@
+---
+import Rating from './Rating.astro';
+import { TIER_LABELS } from '../lib/site';
+import type { GarageRating } from '../lib/queries';
+
+interface Props {
+  garage: {
+    slug: string;
+    name: string;
+    tier: 'premium' | 'verified' | 'mobile';
+    description: string;
+    warrantyMonths: number;
+    turnaroundHours: number | null;
+    priceBand: string;
+  };
+  rating?: GarageRating;
+  compareHref?: string;
+}
+
+const { garage, rating, compareHref } = Astro.props;
+
+// Warranty and turnaround are the two numbers people actually compare, so they sit in a
+// fixed pair of slots on every card and line up down the grid.
+const terms: [string, string][] = [
+  ['Warranty', garage.warrantyMonths > 0 ? `${garage.warrantyMonths} months` : 'None stated'],
+  ['Turnaround', garage.turnaroundHours ? `${garage.turnaroundHours} hours` : 'On request'],
+  ['Price band', garage.priceBand],
+];
+---
+
+<article class="sheet flex flex-col p-6">
+  <p class="text-[0.9375rem] text-graphite">{TIER_LABELS[garage.tier]}</p>
+  <h3 class="subtitle mt-1">
+    <a href={`/garages/${garage.slug}/`} class="hover:underline hover:underline-offset-4">{garage.name}</a>
+  </h3>
+  <div class="mt-2"><Rating rating={rating?.avg ?? null} count={rating?.count} /></div>
+  <p class="mt-4 flex-1 text-[0.9375rem] leading-relaxed text-graphite">{garage.description}</p>
+  <dl class="mt-5 border-t border-rule pt-4 text-[0.9375rem]">
+    {terms.map(([label, value]) => (
+      <div class="flex justify-between gap-4 py-1">
+        <dt class="text-graphite">{label}</dt>
+        <dd class="tabular font-medium">{value}</dd>
+      </div>
+    ))}
+  </dl>
+  <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[0.9375rem]">
+    <a href={`/garages/${garage.slug}/`} class="link">View profile</a>
+    {compareHref && <a href={compareHref} class="link text-graphite">Add to comparison</a>}
+  </div>
+</article>

@@ -1,0 +1,47 @@
+---
+import { STEPS } from '../lib/how-it-works';
+
+/* The homepage condensation of /about/how-it-works: four steps, one line each. */
+interface Props {
+  count?: number;
+  class?: string;
+}
+const { count = 4, class: klass = '' } = Astro.props;
+const steps = STEPS.slice(0, count);
+
+/*
+  One stroke weight, one colour, drawn on the same 24-unit grid as the phone icon in the hero.
+  Anything more decorative would fight the display type for attention.
+*/
+const PATHS: Record<string, string> = {
+  describe: 'M4 5h16M4 11h16M4 17h9',
+  respond: 'M4 6h16v10H9l-4 4V6Z',
+  compare: 'M6 20V9M12 20V4M18 20v-7',
+  book: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4',
+  review: 'm12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8Z',
+};
+---
+
+<ol class={`grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 ${klass}`}>
+  {steps.map((step, i) => (
+    <li class="border-t border-rule pt-6">
+      <div class="flex items-center gap-3">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-6 text-gold-light"
+          aria-hidden="true"
+        >
+          <path d={PATHS[step.icon]} />
+        </svg>
+        <span class="tabular text-[0.9375rem] text-graphite">Step {i + 1}</span>
+      </div>
+      <h3 class="subtitle mt-4">{step.title}</h3>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-graphite">{step.short}</p>
+    </li>
+  ))}
+</ol>

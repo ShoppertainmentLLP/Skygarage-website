@@ -1,0 +1,159 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getEntry, render } from 'astro:content';
+import { db } from '../../db/client';
+import { categorySlug, getArticles } from '../../lib/articles';
+import { SITE } from '../../lib/site';
+import { locationUrl, serviceUrl } from '../../lib/urls';
+
+const { slug } = Astro.params;
+const entry = await getEntry('articles', slug!);
+if (!entry) return Astro.rewrite('/404/');
+const { Content } = await render(entry);
+
+/*
+  E-E-A-T furniture the audit asks for in §8.4: who wrote it, how long it takes to read, when it
+  was last checked, where to go next, and — the one that actually moves rankings — descriptive
+  links from the post into the service and location pages it is about.
+*/
+const words = entry.body?.split(/\s+/).filter(Boolean).length ?? 0;
+const readingMinutes = Math.max(1, Math.round(words / 220));
+
+const [services, locations, all] = await Promise.all([
+  entry.data.services.length
+    ? db.query.services.findMany({ where: (s, { inArray }) => inArray(s.slug, entry.data.services) })
+    : Promise.resolve([]),
+  entry.data.locations.length
+    ? db.query.locations.findMany({ where: (l, { inArray }) => inArray(l.slug, entry.data.locations) })
+    : Promise.resolve([]),
+  getArticles(),
+]);
+
+if (import.meta.env.DEV) {
+  const missing = [
+    ...entry.data.services.filter((s) => !services.some((row) => row.slug === s)),
+    ...entry.data.locations.filter((l) => !locations.some((row) => row.slug === l)),
+  ];
+  if (missing.length > 0) console.warn(`[article:${entry.id}] unknown slugs: ${missing.join(', ')}`);
+  if (services.length === 0 || locations.length === 0) {
+    console.warn(`[article:${entry.id}] §8.4 wants at least one service and one location link`);
+  }
+}
+
+// Same category first, then anything else recent, never itself.
+const related = [
+  ...all.filter((a) => a.id !== entry.id && a.data.category === entry.data.category),
+  ...all.filter((a) => a.id !== entry.id && a.data.category !== entry.data.category),
+].slice(0, 3);
+
+const fmtDate = (d: Date) => d.toLocaleDateString('en-AE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: entry.data.title,
+    description: entry.data.description,
+    datePublished: entry.data.publishedAt.toISOString(),
+    dateModified: (entry.data.updatedAt ?? entry.data.publishedAt).toISOString(),
+    articleSection: entry.data.category,
+    wordCount: words,
+    author: { '@type': 'Organization', name: entry.data.author, url: SITE.url },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.description} schema={schema}>
+  <PageHead
+    trail={[
+      ['/blog/', 'Blog'],
+      [`/blog/category/${categorySlug(entry.data.category)}/`, entry.data.category],
+      ['', entry.data.title],
+    ]}
+    title={entry.data.title}
+  >
+    {entry.data.description}
+  </PageHead>
+
+  <article class="spine-narrow pt-14 pb-20">
+    {entry.data.image && (
+      <img
+        src={entry.data.image}
+        alt={entry.data.imageAlt ?? ''}
+        width="835"
+        height="466"
+        class="mb-10 w-full rounded-[3px] border border-rule"
+      />
+    )}
+
+    <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.9375rem] text-graphite">
+      <span>{entry.data.author}</span>
+      <span aria-hidden="true">·</span>
+      <span>{readingMinutes} min read</span>
+      <span aria-hidden="true">·</span>
+      <span>
+        {entry.data.updatedAt ? `Updated ${fmtDate(entry.data.updatedAt)}` : `Published ${fmtDate(entry.data.publishedAt)}`}
+      </span>
+    </p>
+
+    <div class="prose-cars mt-8">
+      <Content />
+    </div>
+
+    {(services.length > 0 || locations.length > 0) && (
+      <aside class="mt-14 border-t border-rule pt-8">
+        <h2 class="title-sm">Book what this article covers</h2>
+        <ul class="mt-4 space-y-2.5">
+          {services.map((s) => (
+            <li>
+              <a href={serviceUrl(s)} class="link">Compare {s.name.toLowerCase()} quotes in Dubai</a>
+            </li>
+          ))}
+          {locations.map((l) => (
+            <li>
+              <a href={locationUrl(l)} class="link">Find a car garage in {l.name}</a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <aside class="sheet mt-10 p-6">
+      <h2 class="title-sm">About this guide</h2>
+      <p class="mt-3 leading-relaxed text-graphite">
+        {entry.data.authorBio ??
+          `Written by ${entry.data.author}. The price ranges in our guides come from quotes real garages in the Cars911 network return on real jobs in the UAE, not from manufacturer list prices — which is why they are ranges rather than single figures. Where a job differs by emirate or by make, we say so.`}
+      </p>
+      <p class="mt-3 text-[0.9375rem] text-graphite">
+        Spotted something out of date? <a href="/about/contact/" class="link">Tell us</a> and we will check it.
+      </p>
+    </aside>
+
+    {related.length > 0 && (
+      <section class="mt-14 border-t border-rule pt-8">
+        <h2 class="title-sm">Read next</h2>
+        <ul class="mt-5 grid gap-5 sm:grid-cols-3">
+          {related.map((a) => (
+            <li>
+              <p class="text-[0.9375rem] text-graphite">{a.data.category}</p>
+              <h3 class="subtitle mt-1">
+                <a href={`/blog/${a.id}/`} class="hover:text-gold-light">{a.data.title}</a>
+              </h3>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <a href={`/blog/category/${categorySlug(entry.data.category)}/`} class="link mt-12 inline-block">
+      More {entry.data.category.toLowerCase()}
+    </a>
+  </article>
+
+  <CtaBand heading="Rather have it done than read about it?">
+    Send one request and compare what the garages come back with.
+  </CtaBand>
+</BaseLayout>

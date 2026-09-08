@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHead from '../../../components/PageHead.astro';
+import CtaBand from '../../../components/CtaBand.astro';
+import GarageCard from '../../../components/GarageCard.astro';
+import { db } from '../../../db/client';
+import { getRatings, getEmirates } from '../../../lib/queries';
+import { priceLabel, SITE } from '../../../lib/site';
+import { BRAND_URL_SUFFIX, bookUrl, brandServiceUrl, brandUrl, serviceLocationUrl } from '../../../lib/urls';
+
+/*
+  Brand crossed with service: "BMW Major Service". Only servicing and repair work is
+  brand-specific enough to justify a page — a dent or a tow is the same job whatever the
+  badge — so body shop and roadside combinations deliberately 404 rather than produce
+  near-identical pages.
+*/
+const BRAND_SPECIFIC = new Set(['car-service', 'car-repair']);
+
+const param = Astro.params.brand!;
+const brandSlug = param.endsWith(BRAND_URL_SUFFIX) ? param.slice(0, -BRAND_URL_SUFFIX.length) : param;
+const svcSlug = Astro.params.service!;
+
+const [brand, service] = await Promise.all([
+  db.query.brands.findFirst({
+    where: (b, { eq }) => eq(b.slug, brandSlug),
+    with: { garageBrands: true },
+  }),
+  db.query.services.findFirst({
+    where: (s, { eq }) => eq(s.slug, svcSlug),
+    with: { category: true, garageServices: { with: { garage: true } } },
+  }),
+]);
+if (!brand || !service || !BRAND_SPECIFIC.has(service.category.slug)) return Astro.rewrite('/404/');
+if (!param.endsWith(BRAND_URL_SUFFIX)) return Astro.redirect(brandServiceUrl(brand, service), 301);
+
+// A garage qualifies only if it does this job and handles this make.
+const brandGarageIds = new Set(brand.garageBrands.map((gb) => gb.garageId));
+const providers = service.garageServices
+  .map((gs) => gs.garage)
+  .filter((g) => g.active && brandGarageIds.has(g.id));
+const ratings = await getRatings(providers.map((g) => g.id));
+const emirates = await getEmirates();
+
+const title = `${brand.name} ${service.name}`;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `${title} in the UAE`,
+    serviceType: service.name,
+    description: service.excerpt,
+    areaServed: 'AE',
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+---
+
+<BaseLayout
+  title={`${title} in Dubai — compare garage quotes`}
+  description={`Compare ${brand.name} ${service.name.toLowerCase()} quotes from verified UAE garages. ${service.excerpt}`}
+  schema={schema}
+  noindex={providers.length === 0}
+>
+  <PageHead
+    trail={[
+      ['/brands/', 'Brands'],
+      [brandUrl(brand), brand.name],
+      ['', service.name],
+    ]}
+    title={title}
+  >
+    {service.excerpt}
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <p class="text-lg leading-relaxed text-graphite">{brand.description}</p>
+
+        <dl class="mt-10 flex flex-wrap gap-x-12 gap-y-5 border-t border-rule pt-7">
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Typical price</dt>
+            <dd class="title-sm mt-1">{priceLabel(service.priceFromAed, service.priceToAed)}</dd>
+          </div>
+          {service.durationLabel && (
+            <div>
+              <dt class="text-[0.9375rem] text-graphite">Typical duration</dt>
+              <dd class="title-sm mt-1">{service.durationLabel}</dd>
+            </div>
+          )}
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Garages for {brand.name}</dt>
+            <dd class="title-sm mt-1">{providers.length}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="lg:col-span-5">
+        <div class="sheet p-6">
+          <h2 class="title-sm">Quote my {brand.name}</h2>
+          <p class="mt-2 text-[0.9375rem] text-graphite">
+            Tell us the model and year, and the garages that know {brand.name} come back with prices.
+          </p>
+          <a href={bookUrl({ service: service.id })} class="btn btn-primary mt-5 w-full">
+            Get quotes
+          </a>
+          <a href={brandUrl(brand)} class="link mt-4 block text-center text-[0.9375rem]">
+            All {brand.name} servicing
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {providers.length > 0 && (
+      <section class="mt-16">
+        <h2 class="title">Garages doing {brand.name} {service.name.toLowerCase()}</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {providers.map((g) => (
+            <GarageCard garage={g} rating={ratings.get(g.id)} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="mt-16">
+      <h2 class="title-sm">{service.name} near you</h2>
+      <ul class="mt-6 flex flex-wrap gap-2.5">
+        {emirates.map((l) => (
+          <li>
+            <a
+              href={serviceLocationUrl(service, l)}
+              class="inline-block rounded-[3px] border border-rule px-3 py-1.5 text-sm font-medium hover:border-gold hover:text-gold-light"
+            >
+              {service.name} in {l.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <CtaBand heading={`${brand.name} ${service.name.toLowerCase()} quotes`}>
+    One request, and the garages that know the make reply with written prices.
+  </CtaBand>
+</BaseLayout>

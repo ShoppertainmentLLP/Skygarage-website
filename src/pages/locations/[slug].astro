@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import GarageCard from '../../components/GarageCard.astro';
+import FaqAccordion from '../../components/FaqAccordion.astro';
+import FeatureList from '../../components/sections/FeatureList.astro';
+import MapEmbed from '../../components/sections/MapEmbed.astro';
+import Rating from '../../components/Rating.astro';
+import { db } from '../../db/client';
+import { getAreasOf, getRatings, getLocationReviews } from '../../lib/queries';
+import { getEntry, render } from 'astro:content';
+import { faqSchema } from '../../lib/faqs';
+import { SITE, priceLabel } from '../../lib/site';
+import { bookUrl, garageUrl, locationUrl, serviceLocationUrl, serviceUrl } from '../../lib/urls';
+
+const { slug } = Astro.params;
+const location = await db.query.locations.findFirst({
+  where: (l, { eq }) => eq(l.slug, slug!),
+  with: {
+    parent: true,
+    garageLocations: { with: { garage: true } },
+  },
+});
+if (!location) return Astro.rewrite('/404/');
+
+/*
+  Area pages are the audit's stated duplicate-content risk (§11.2), so everything specific to a
+  place — the local notes, the map, the services worth surfacing first — comes from its own copy
+  file. An area without one still renders, and it renders visibly thinner, which is the honest
+  signal that it needs writing.
+*/
+const copy = await getEntry('locationCopy', location.slug);
+const Body = copy ? (await render(copy)).Content : null;
+
+const garagesHere = location.garageLocations.map((gl) => gl.garage).filter((g) => g.active);
+const [areas, ratings, reviews, popular] = await Promise.all([
+  location.type === 'emirate' ? getAreasOf(location.id) : Promise.resolve([]),
+  getRatings(garagesHere.map((g) => g.id)),
+  getLocationReviews(location.id),
+  copy?.data.popularServices.length
+    ? db.query.services.findMany({ where: (s, { inArray }) => inArray(s.slug, copy.data.popularServices) })
+    : db.query.services.findMany({ orderBy: (s, { asc }) => asc(s.sort), limit: 8 }),
+]);
+
+const faqs = (copy?.data.faqs ?? []).map((f) => [f.q, f.a] as [string, string]);
+
+// A slug typo in a copy file would otherwise just render one card fewer, silently.
+if (import.meta.env.DEV && copy) {
+  const missing = copy.data.popularServices.filter((slug) => !popular.some((s) => s.slug === slug));
+  if (missing.length > 0) console.warn(`[locationCopy:${location.slug}] unknown service slugs: ${missing.join(', ')}`);
+}
+const mapQuery = copy?.data.mapQuery ?? `${location.name}, UAE`;
+
+const trail: [string, string][] =
+  location.type === 'area' && location.parent
+    ? [['/locations/', 'Locations'], [locationUrl(location.parent), location.parent.name], ['', location.name]]
+    : [['/locations/', 'Locations'], ['', location.name]];
+
+const schema: object[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `Car service in ${location.name}`,
+    description: copy?.data.metaDescription ?? location.blurb,
+    areaServed: { '@type': 'Place', name: location.name },
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+if (faqs.length > 0) schema.push(faqSchema(faqs));
+
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+---
+
+<BaseLayout
+  title={copy?.data.metaTitle ?? `Car Service in ${location.name} — compare garage quotes`}
+  description={copy?.data.metaDescription ?? `${location.blurb} Request quotes from verified ${location.name} garages for servicing, repairs and roadside help.`}
+  schema={schema}
+>
+  <PageHead trail={trail} title={copy?.data.heading ?? `Car Service in ${location.name}`}>
+    {location.blurb}
+  </PageHead>
+
+  <div class="spine pt-14 pb-8">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        {Body ? (
+          <div class="prose-cars">
+            <Body />
+          </div>
+        ) : (
+          <p class="measure text-lg leading-relaxed text-graphite">{location.blurb}</p>
+        )}
+      </div>
+      <aside class="lg:col-span-5">
+        <div class="sheet p-6 lg:sticky lg:top-24">
+          <h2 class="title-sm">Get quotes in {location.name}</h2>
+          <p class="mt-2 text-[0.9375rem] text-graphite">
+            One request reaches the garages and mobile mechanics that cover this area.
+          </p>
+          <a
+            href={bookUrl({ location: location.type === 'emirate' ? location.id : (location.parentId ?? location.id) })}
+            class="btn btn-primary mt-5 w-full"
+          >
+            Get quotes
+          </a>
+          <dl class="mt-6 space-y-3 border-t border-rule pt-5 text-[0.9375rem]">
+            <div class="flex justify-between gap-4">
+              <dt class="text-graphite">Garages covering it</dt>
+              <dd class="tabular font-medium">{garagesHere.length}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-graphite">Roadside assistance</dt>
+              <dd class="font-medium">24/7</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="spine pb-8">
+    <FeatureList heading={`Servicing a car in ${location.name}`} items={copy?.data.local ?? []} class="band" />
+
+    <section class="band">
+      <h2 class="title">Services available in {location.name}</h2>
+      <ul class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {popular.map((s) => (
+          <li class="rounded-[3px] border border-rule bg-surface p-5">
+            <h3 class="subtitle">
+              <a href={serviceLocationUrl(s, location)} class="hover:text-gold-light">
+                {s.name} in {location.name}
+              </a>
+            </h3>
+            <p class="mt-2 text-[0.9375rem] leading-relaxed text-graphite">{s.excerpt}</p>
+            <p class="mt-3 text-[0.9375rem] font-medium">{priceLabel(s.priceFromAed, s.priceToAed)}</p>
+          </li>
+        ))}
+      </ul>
+      <a href="/services/" class="link mt-8 inline-block">Every service we cover</a>
+    </section>
+
+    <section class="band">
+      <h2 class="title">Where we cover in {location.name}</h2>
+      <MapEmbed query={mapQuery} label={`Cars911 coverage in ${location.name}`} class="mt-8" />
+    </section>
+
+    <section class="band">
+      <h2 class="title">Garages serving {location.name}</h2>
+      {garagesHere.length > 0 ? (
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {garagesHere.map((g) => (
+            <GarageCard garage={g} rating={ratings.get(g.id)} />
+          ))}
+        </div>
+      ) : (
+        <p class="measure mt-6 text-graphite">
+          Partner garages inside {location.name} are onboarding now. Send the request anyway — the
+          workshops and mobile mechanics in the surrounding areas cover it and will quote.
+        </p>
+      )}
+    </section>
+
+    {reviews.length > 0 && (
+      <section class="band">
+        <h2 class="title">What drivers here say</h2>
+        <ul class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {reviews.slice(0, 6).map((r) => (
+            <li class="sheet flex flex-col p-6">
+              <Rating rating={r.rating} />
+              <p class="mt-4 flex-1 leading-relaxed text-graphite">“{r.comment}”</p>
+              <p class="mt-5 text-[0.9375rem]">
+                <span class="font-medium">{r.authorName}</span>
+                <span class="text-graphite"> · {fmt(r.createdAt)}</span>
+              </p>
+              <p class="mt-1 text-[0.9375rem] text-graphite">
+                At <a href={garageUrl(r.garage)} class="link">{r.garage.name}</a>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {areas.length > 0 && (
+      <section class="band">
+        <h2 class="title-sm">Areas in {location.name}</h2>
+        <ul class="mt-6 flex flex-wrap gap-3">
+          {areas.map((a) => (
+            <li>
+              <a
+                href={locationUrl(a)}
+                class="inline-block rounded-[3px] border border-rule bg-surface px-4 py-2 font-semibold hover:border-gold hover:text-gold-light"
+              >
+                {a.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {faqs.length > 0 && (
+      <section class="band">
+        <h2 class="title">Car servicing in {location.name}: questions</h2>
+        <FaqAccordion faqs={faqs} class="mt-8" />
+      </section>
+    )}
+  </div>
+
+  <CtaBand heading="One request. Multiple quotes.">Verified garages near you quote on your job, and you choose.</CtaBand>
+</BaseLayout>

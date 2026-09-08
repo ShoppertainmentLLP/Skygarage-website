@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="That page doesn't exist. Head back to Cars911 to get quotes, book a service or find a garage.">
+  <div class="spine-narrow pt-24 pb-28">
+    <div>
+      <p class="figure text-graphite text-[4rem] leading-none">404</p>
+      <h1 class="title mt-4">That page took a wrong turn</h1>
+      <p class="lede mt-4">The page you're after doesn't exist or has moved.</p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/book-a-service/" class="btn btn-primary">Get quotes</a>
+        <a href="/" class="btn btn-quiet">Back to home</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

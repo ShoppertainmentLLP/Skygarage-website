@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ADMIN_COOKIE, isCorrectPassword, makeSessionToken } from '../../lib/admin';
+
+let failed = false;
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  if (isCorrectPassword(String(form.get('password') ?? ''))) {
+    Astro.cookies.set(ADMIN_COOKIE, makeSessionToken(), {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: import.meta.env.PROD,
+      maxAge: 7 * 24 * 60 * 60,
+    });
+    return Astro.redirect('/admin/');
+  }
+  failed = true;
+}
+---
+
+<BaseLayout title="Admin login" description="Cars911 administration.">
+  <div class="mx-auto max-w-sm px-4 py-20">
+    <h1 class="title">Admin</h1>
+    <form method="POST" class="mt-6 grid gap-4 rounded-[3px] bg-surface p-6">
+      <div>
+        <label class="field-label" for="adm-pass">Password</label>
+        <input id="adm-pass" name="password" type="password" class="field" required autofocus />
+      </div>
+      {failed && <p class="rounded-[3px] bg-alert-wash p-3 text-sm font-semibold text-alert">Wrong password.</p>}
+      <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+  </div>
+</BaseLayout>

@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../CtaBand.astro';
+import PageHead from '../PageHead.astro';
+import GarageCard from '../GarageCard.astro';
+import { getRatings, getAreasOf } from '../../lib/queries';
+import { priceLabel, SITE } from '../../lib/site';
+import { bookUrl, serviceLocationUrl, serviceUrl } from '../../lib/urls';
+
+/*
+  Service crossed with location: "Brake Repair in Dubai". These are the pages people actually
+  search for, and each one is genuinely different — only the garages that do this job in this
+  place appear, alongside that emirate's own districts.
+*/
+interface Props {
+  service: any;
+  location: any;
+}
+
+const { service, location } = Astro.props;
+
+// A garage qualifies only if it does this job and covers this place.
+const hereIds = new Set(location.garageLocations.map((gl: any) => gl.garageId));
+const providers = service.garageServices
+  .map((gs: any) => gs.garage)
+  .filter((g: any) => g.active && hereIds.has(g.id));
+const ratings = await getRatings(providers.map((g: any) => g.id));
+
+const areas = location.type === 'emirate' ? await getAreasOf(location.id) : [];
+const where = location.name;
+const title = `${service.name} in ${where}`;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: title,
+    description: service.excerpt,
+    serviceType: service.name,
+    areaServed: { '@type': 'Place', name: where },
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+
+const trail: [string, string][] = [
+  ['/services/', 'Services'],
+  [serviceUrl(service), service.name],
+  ['', where],
+];
+---
+
+<BaseLayout
+  title={`${title} — compare quotes from verified garages`}
+  description={`Compare ${service.name.toLowerCase()} quotes from verified garages in ${where}. ${service.excerpt}`}
+  schema={schema}
+  noindex={providers.length === 0}
+>
+  <PageHead trail={trail} title={title}>
+    {service.excerpt}
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        {service.description !== service.excerpt && (
+          <p class="text-lg leading-relaxed text-graphite">{service.description}</p>
+        )}
+
+        <dl class="mt-10 flex flex-wrap gap-x-12 gap-y-5 border-t border-rule pt-7">
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Typical price</dt>
+            <dd class="title-sm mt-1">{priceLabel(service.priceFromAed, service.priceToAed)}</dd>
+          </div>
+          {service.durationLabel && (
+            <div>
+              <dt class="text-[0.9375rem] text-graphite">Typical duration</dt>
+              <dd class="title-sm mt-1">{service.durationLabel}</dd>
+            </div>
+          )}
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Garages here</dt>
+            <dd class="title-sm mt-1">{providers.length}</dd>
+          </div>
+        </dl>
+
+        <p class="measure mt-8 text-graphite">{location.blurb}</p>
+      </div>
+
+      <aside class="lg:col-span-5">
+        <div class="sheet p-6">
+          <h2 class="title-sm">Get {service.name.toLowerCase()} quotes in {where}</h2>
+          <p class="mt-2 text-[0.9375rem] text-graphite">
+            One request reaches every garage here that does this job.
+          </p>
+          <a
+            href={bookUrl({
+              service: service.id,
+              location: location.type === 'emirate' ? location.id : (location.parentId ?? location.id),
+            })}
+            class="btn btn-primary mt-5 w-full"
+          >
+            Get quotes
+          </a>
+          <a href={serviceUrl(service)} class="link mt-4 block text-center text-[0.9375rem]">
+            {service.name} across the UAE
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {providers.length > 0 ? (
+      <section class="mt-16">
+        <h2 class="title">Garages doing {service.name.toLowerCase()} in {where}</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {providers.map((g: any) => (
+            <GarageCard garage={g} rating={ratings.get(g.id)} />
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="mt-16">
+        <h2 class="title">No listed garage in {where} yet</h2>
+        <p class="lede mt-4">
+          Send the request anyway — we cover {where} through nearby workshops and mobile mechanics,
+          and they will quote on it.
+        </p>
+      </section>
+    )}
+
+    {areas.length > 0 && (
+      <section class="mt-16">
+        <h2 class="title-sm">{service.name} by district</h2>
+        <ul class="mt-6 flex flex-wrap gap-2.5">
+          {areas.map((a) => (
+            <li>
+              <a
+                href={serviceLocationUrl(service, a)}
+                class="inline-block rounded-[3px] border border-rule px-3 py-1.5 text-sm font-medium hover:border-gold hover:text-gold-light"
+              >
+                {service.name} in {a.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </div>
+
+  <CtaBand heading={`${service.name} in ${where}`}>
+    Describe the job once and the garages here reply with written prices.
+  </CtaBand>
+</BaseLayout>

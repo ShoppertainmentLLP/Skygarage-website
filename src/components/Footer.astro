@@ -1,0 +1,123 @@
+---
+import { SITE, telLink, waLink, phoneDisplay, NAP, hasPostalAddress } from '../lib/site';
+
+const policies: [string, string][] = [
+  ['/policies/privacy-policy/', 'Privacy policy'],
+  ['/policies/terms-and-conditions/', 'Terms and conditions'],
+  ['/policies/warranty-policy/', 'Warranty policy'],
+  ['/policies/refund-policy/', 'Refund policy'],
+  ['/policies/cookie-policy/', 'Cookie policy'],
+];
+
+const columns: [string, [string, string][]][] = [
+  [
+    'Book',
+    [
+      ['/book-a-service/', 'Book a car service'],
+      ['/book/appointment/', 'Book appointment'],
+      ['/book/emergency/', 'Emergency booking'],
+      ['/book/corporate/', 'Corporate booking'],
+      ['/book/packages/', 'Service packages'],
+      ['/book/compare/', 'Compare garages'],
+    ],
+  ],
+  [
+    'Services',
+    [
+      ['/services/car-service/', 'Car Service'],
+      ['/services/car-repair/', 'Car Repair'],
+      ['/services/body-shop/', 'Body Shop'],
+      ['/services/roadside-assistance/', 'Roadside Assistance'],
+      ['/services/', 'All services'],
+    ],
+  ],
+  [
+    'Brands',
+    [
+      ['/brands/bmw-service-dubai/', 'BMW'],
+      ['/brands/mercedes-benz-service-dubai/', 'Mercedes-Benz'],
+      ['/brands/audi-service-dubai/', 'Audi'],
+      ['/brands/toyota-service-dubai/', 'Toyota'],
+      ['/brands/nissan-service-dubai/', 'Nissan'],
+    ],
+  ],
+  [
+    'Explore',
+    [
+      ['/locations/', 'Locations'],
+      ['/garages/', 'Garage network'],
+      ['/blog/', 'Blog'],
+      ['/brands/', 'All brands'],
+      ['/rsa/', 'Roadside assistance'],
+    ],
+  ],
+  [
+    'Company',
+    [
+      ['/about/', 'About Cars911'],
+      ['/about/how-it-works/', 'How it works'],
+      ['/about/faq/', 'FAQ'],
+      ['/about/warranty/', 'Warranty explained'],
+      ['/partners/join/', 'Become a partner'],
+      ['/blog/', 'Blog'],
+      ['/about/contact/', 'Contact us'],
+    ],
+  ],
+];
+---
+
+<footer class="border-t border-gold/30 bg-ink text-white/70">
+  <div class="spine py-16">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
+      <div class="lg:pr-8">
+        <img src="/brand/logo.webp" alt="Cars911 — Trust, Choose, Cruise" width="261" height="192" loading="lazy" decoding="async" class="h-24 w-auto aspect-[261/192]" />
+        <p class="mt-4 text-[0.9375rem] text-gold-light">One request, multiple quotes, fast help.</p>
+        <!--
+          The NAP block: name, address and phone, in the same form they appear on the Google
+          Business Profile. The address and the social row render only once NAP in lib/site.ts
+          is filled in — see the note there on why they are empty.
+        -->
+        <address class="mt-6 flex flex-col gap-1.5 text-[0.9375rem] not-italic">
+          <span class="font-medium text-white">{SITE.name}</span>
+          {hasPostalAddress() && (
+            <span class="text-white/70">
+              {NAP.street}<br />
+              {NAP.locality}{NAP.postalCode ? `, ${NAP.postalCode}` : ''}<br />
+              {NAP.region}, United Arab Emirates
+            </span>
+          )}
+          <a href={telLink()} class="tabular text-white hover:text-gold-light">{phoneDisplay()}</a>
+          <a href={waLink('Hi Cars911, I need help with my car.')} class="text-white hover:text-gold-light">WhatsApp us</a>
+        </address>
+
+        {NAP.socials.length > 0 && (
+          <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[0.9375rem]">
+            {NAP.socials.map((social) => (
+              <li>
+                <a href={social.url} class="hover:text-gold-light" rel="me noopener">{social.name}</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {columns.map(([heading, links]) => (
+        <nav aria-label={heading}>
+          <p class="title-sm text-[0.9375rem] text-gold-light">{heading}</p>
+          <ul class="mt-3 space-y-2 text-[0.9375rem]">
+            {links.map(([href, label]) => (
+              <li><a href={href} class="hover:text-gold-light">{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+    <div class="mt-14 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-4 border-t border-gold/25 pt-6 text-sm">
+      <p>© {new Date().getFullYear()} Cars911. Connecting UAE car owners with verified garages.</p>
+      <ul class="flex flex-wrap gap-x-6 gap-y-2">
+        {policies.map(([href, label]) => (
+          <li><a href={href} class="hover:text-gold-light">{label}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</footer>

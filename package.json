@@ -1,0 +1,39 @@
+{
+  "name": "car-website",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "db:up": "docker compose up -d",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx src/db/seed.ts",
+    "start": "node dist/server/entry.mjs",
+    "check:content": "node scripts/check-content.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.5",
+    "@astrojs/svelte": "^9.0.1",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.10",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9",
+    "svelte": "^5.57.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "zod": "^4.5.4"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.13"
+  }
+}

@@ -1,0 +1,216 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHead from '../../../components/PageHead.astro';
+import CtaBand from '../../../components/CtaBand.astro';
+import GarageCard from '../../../components/GarageCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import FeatureList from '../../../components/sections/FeatureList.astro';
+import Rating from '../../../components/Rating.astro';
+import { db } from '../../../db/client';
+import { getRatings, getCategoriesWithServices, getBrandReviews } from '../../../lib/queries';
+import { getEntry, render } from 'astro:content';
+import { SITE, priceLabel } from '../../../lib/site';
+import { faqSchema } from '../../../lib/faqs';
+import { BOOK_URL, BRAND_URL_SUFFIX, brandServiceUrl, brandUrl, garageUrl } from '../../../lib/urls';
+
+/* The indexable form is /brands/bmw-service-dubai/; the bare slug is the pre-restructure URL. */
+const param = Astro.params.brand!;
+const slug = param.endsWith(BRAND_URL_SUFFIX) ? param.slice(0, -BRAND_URL_SUFFIX.length) : param;
+const brand = await db.query.brands.findFirst({
+  where: (b, { eq }) => eq(b.slug, slug),
+  with: { garageBrands: { with: { garage: true } } },
+});
+if (!brand) return Astro.rewrite('/404/');
+if (!param.endsWith(BRAND_URL_SUFFIX)) return Astro.redirect(brandUrl(brand), 301);
+
+const copy = await getEntry('brandCopy', brand.slug);
+const Body = copy ? (await render(copy)).Content : null;
+
+const garagesHere = brand.garageBrands.map((gb) => gb.garage).filter((g) => g.active);
+const [ratings, categories, reviews] = await Promise.all([
+  getRatings(garagesHere.map((g) => g.id)),
+  getCategoriesWithServices(),
+  getBrandReviews(brand.id),
+]);
+
+// Servicing and repair are the brand-specific jobs; body work and towing are not.
+const brandServices = categories.filter((c) => c.slug === 'car-service' || c.slug === 'car-repair');
+const faqs = (copy?.data.faqs ?? []).map((f) => [f.q, f.a] as [string, string]);
+
+const schema: object[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `${brand.name} service in Dubai`,
+    serviceType: `${brand.name} servicing and repair`,
+    description: copy?.data.metaDescription ?? brand.tagline,
+    areaServed: 'AE',
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+if (faqs.length > 0) schema.push(faqSchema(faqs));
+
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+---
+
+<BaseLayout
+  title={copy?.data.metaTitle ?? `${brand.name} Service in Dubai — compare garage quotes`}
+  description={copy?.data.metaDescription ?? brand.tagline}
+  schema={schema}
+>
+  <PageHead trail={[['/brands/', 'Brands'], ['', brand.name]]} title={copy?.data.heading ?? `${brand.name} Service in Dubai`}>
+    {brand.tagline}
+  </PageHead>
+
+  <div class="spine pt-14 pb-8">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        {Body ? (
+          <div class="prose-cars">
+            <Body />
+          </div>
+        ) : (
+          <p class="text-lg leading-relaxed text-graphite">{brand.description}</p>
+        )}
+
+        {brand.commonJobs.length > 0 && (
+          <section class="mt-12">
+            <h2 class="title-sm">What {brand.name} owners book most</h2>
+            <ul class="mt-5 border-t border-rule">
+              {brand.commonJobs.map((job) => (
+                <li class="border-b border-rule py-3.5">{job}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+
+      <aside class="lg:col-span-5">
+        <div class="sheet p-6 lg:sticky lg:top-24">
+          <h2 class="title-sm">Where {brand.name} owners go</h2>
+          <p class="mt-2 text-[0.9375rem] text-graphite">
+            {garagesHere.length > 0
+              ? `${garagesHere.length} ${garagesHere.length === 1 ? 'garage in the network works' : 'garages in the network work'} on ${brand.name}.`
+              : `Send a request and we will match you with garages that handle ${brand.name}.`}
+          </p>
+          <a href={BOOK_URL} class="btn btn-primary mt-5 w-full">Get quotes</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="spine pb-8">
+    {(copy?.data.models.length ?? 0) > 0 && (
+      <section class="band">
+        <h2 class="title">Popular {brand.name} models we service</h2>
+        <ul class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {copy!.data.models.map((m) => (
+            <li class="sheet p-6">
+              <h3 class="title-sm">{m.name}</h3>
+              {m.years && <p class="mt-1 text-[0.9375rem] text-gold-light">{m.years}</p>}
+              <p class="mt-3 text-[0.9375rem] leading-relaxed text-graphite">{m.detail}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {(copy?.data.pricing.length ?? 0) > 0 && (
+      <section class="band">
+        <h2 class="title">{brand.name} servicing prices in Dubai</h2>
+        <div class="mt-8 overflow-x-auto">
+          <table class="w-full min-w-[34rem] border-collapse text-left">
+            <thead>
+              <tr class="border-b border-rule text-[0.9375rem] text-graphite">
+                <th scope="col" class="py-3 pr-6 font-normal">Job</th>
+                <th scope="col" class="py-3 pr-6 font-normal">Typical price</th>
+                <th scope="col" class="py-3 font-normal">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {copy!.data.pricing.map((row) => (
+                <tr class="border-b border-rule">
+                  <td class="py-4 pr-6 font-medium">{row.job}</td>
+                  <td class="tabular py-4 pr-6 whitespace-nowrap">{priceLabel(row.fromAed, row.toAed ?? null)}</td>
+                  <td class="py-4 text-[0.9375rem] text-graphite">{row.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-5 text-[0.9375rem] text-graphite">
+          Independent workshop prices for a typical car of this make. Dealer pricing usually sits
+          well above the top of these ranges; your quote is for your car and its actual mileage.
+        </p>
+      </section>
+    )}
+
+    <FeatureList heading={`Why service a ${brand.name} through Cars911`} items={copy?.data.why ?? []} columns={3} class="band" />
+
+    {brandServices.map((c) => (
+      <section class="band">
+        <h2 class="title-sm">{brand.name} {c.name.toLowerCase()}</h2>
+        <ul class="mt-5 flex flex-wrap gap-2.5">
+          {c.services.map((s) => (
+            <li>
+              <a
+                href={brandServiceUrl(brand, s)}
+                class="inline-block rounded-[3px] border border-rule px-3 py-1.5 text-sm font-medium hover:border-gold hover:text-gold-light"
+              >
+                {brand.name} {s.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    {garagesHere.length > 0 && (
+      <section class="band">
+        <h2 class="title">Garages that work on {brand.name}</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {garagesHere.map((g) => (
+            <GarageCard garage={g} rating={ratings.get(g.id)} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {reviews.length > 0 && (
+      <section class="band">
+        <h2 class="title">Reviews from {brand.name} owners</h2>
+        <!--
+          These are reviews of the garages that handle this make, not of the make itself, and the
+          heading says so. No AggregateRating markup here: the rating would describe the garages
+          rather than the page's subject.
+        -->
+        <ul class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {reviews.slice(0, 6).map((r) => (
+            <li class="sheet flex flex-col p-6">
+              <Rating rating={r.rating} />
+              <p class="mt-4 flex-1 leading-relaxed text-graphite">“{r.comment}”</p>
+              <p class="mt-5 text-[0.9375rem]">
+                <span class="font-medium">{r.authorName}</span>
+                <span class="text-graphite"> · {fmt(r.createdAt)}</span>
+              </p>
+              <p class="mt-1 text-[0.9375rem] text-graphite">
+                At <a href={garageUrl(r.garage)} class="link">{r.garage.name}</a>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {faqs.length > 0 && (
+      <section class="band">
+        <h2 class="title">{brand.name} servicing questions</h2>
+        <FaqAccordion faqs={faqs} class="mt-8" />
+      </section>
+    )}
+  </div>
+
+  <CtaBand heading={`Get ${brand.name} quotes`}>
+    Describe the job once and the garages that know {brand.name} reply with prices.
+  </CtaBand>
+</BaseLayout>

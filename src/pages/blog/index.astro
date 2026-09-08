@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getArticles, categorySlug, ARTICLE_CATEGORIES, CATEGORY_BLURBS } from '../../lib/articles';
+
+const articles = await getArticles();
+const fmt = (d: Date) => d.toLocaleDateString('en-AE', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<BaseLayout
+  title="Blog — car care knowledge for UAE drivers"
+  description="Maintenance guides, cost guides, buying guides and seasonal car care — written for UAE conditions, not copied from a manual meant for somewhere rainy."
+>
+  <PageHead trail={[['/blog/', 'Blog']]} title="Blog">
+    Written for UAE conditions — the heat, the dust, the traffic — not copied from a manual meant
+    for somewhere rainy.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {ARTICLE_CATEGORIES.map((category) => (
+        <li class="sheet flex flex-col p-6">
+          <h2 class="title-sm">
+            <a href={`/blog/category/${categorySlug(category)}/`} class="hover:text-gold-light">{category}</a>
+          </h2>
+          <p class="mt-3 flex-1 text-[0.9375rem] text-graphite">{CATEGORY_BLURBS[category]}</p>
+          <p class="mt-5 text-[0.9375rem] text-graphite">
+            {articles.filter((a) => a.data.category === category).length}
+            {articles.filter((a) => a.data.category === category).length === 1 ? ' article' : ' articles'}
+          </p>
+        </li>
+      ))}
+    </ul>
+
+    <section class="mt-16">
+      <h2 class="title">Latest</h2>
+      <ul class="mt-8 border-t border-rule">
+        {articles.map((a) => (
+          <li class="border-b border-rule py-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+              <h3 class="subtitle">
+                <a href={`/blog/${a.id}/`} class="hover:text-gold-light">{a.data.title}</a>
+              </h3>
+              <p class="text-[0.9375rem] text-graphite">
+                <a href={`/blog/category/${categorySlug(a.data.category)}/`} class="hover:text-gold-light">
+                  {a.data.category}
+                </a>
+              </p>
+            </div>
+            <p class="measure mt-2 text-graphite">{a.data.description}</p>
+            <p class="mt-2 text-[0.9375rem] text-graphite">{fmt(a.data.publishedAt)}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <CtaBand heading="Rather have it done than read about it?">
+    Send one request and compare what the garages come back with.
+  </CtaBand>
+</BaseLayout>

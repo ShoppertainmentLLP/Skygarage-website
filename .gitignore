@@ -1,0 +1,35 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# source material from the client / agency, not application code
+*.zip
+*.pdf
+
+# tooling scratch output
+.playwright-mcp/
+lighthouse-report*.json
+# Chrome under WSL writes its profile to a literal Windows-style path when Lighthouse
+# is given a Windows TMPDIR, which drops these directories into the project root.
+C:\\*

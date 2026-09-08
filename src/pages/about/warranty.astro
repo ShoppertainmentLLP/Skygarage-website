@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getActiveGarages } from '../../lib/queries';
+
+const garages = await getActiveGarages();
+const withWarranty = garages.filter((g) => g.warrantyMonths > 0);
+const longest = withWarranty.reduce((max, g) => Math.max(max, g.warrantyMonths), 0);
+
+const covered: [string, string][] = [
+  ['Workmanship', 'If the same fault comes back because of how the work was done, the garage puts it right at no charge.'],
+  ['Parts the garage supplied', 'Covered for the term on your quote, or the manufacturer’s own part warranty where that is longer.'],
+  ['Re-diagnosis', 'Bringing the car back to be looked at again is not a second diagnostic fee.'],
+];
+
+const notCovered: [string, string][] = [
+  ['Wear items used up normally', 'Brake pads, wipers and tyres wear out. That is not a fault.'],
+  ['Parts you supplied yourself', 'A garage can fit your own part, but cannot warrant something it did not source.'],
+  ['A different fault', 'A new problem is a new job. It is quoted like any other.'],
+  ['Damage after the work', 'Accidents, kerbing and neglect after collection sit outside the warranty.'],
+];
+---
+
+<BaseLayout
+  title="How the warranty works"
+  description="Every Cars911 quote carries a written workmanship warranty. What it covers, what it does not, and how to claim it."
+>
+  <PageHead trail={[['/about/', 'About'], ['', 'Warranty']]} title="How the warranty works">
+    Every quote carries a written warranty term before you book. It is not a promise made on the
+    phone — it is on the quote you compare.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <dl class="flex flex-wrap gap-x-14 gap-y-6 border-b border-rule pb-10">
+      <div>
+        <dt class="text-[0.9375rem] text-graphite">Garages with a written warranty</dt>
+        <dd class="title-sm mt-1">{withWarranty.length} of {garages.length}</dd>
+      </div>
+      <div>
+        <dt class="text-[0.9375rem] text-graphite">Longest term in the network</dt>
+        <dd class="title-sm mt-1">{longest} months</dd>
+      </div>
+      <div>
+        <dt class="text-[0.9375rem] text-graphite">Cost to claim</dt>
+        <dd class="title-sm mt-1">Nothing</dd>
+      </div>
+    </dl>
+
+    <div class="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-16">
+      <section>
+        <h2 class="title-sm">What the warranty covers</h2>
+        <dl class="mt-6 border-t border-rule">
+          {covered.map(([term, detail]) => (
+            <div class="border-b border-rule py-5">
+              <dt class="subtitle">{term}</dt>
+              <dd class="mt-2 text-graphite">{detail}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section>
+        <h2 class="title-sm">What it does not</h2>
+        <dl class="mt-6 border-t border-rule">
+          {notCovered.map(([term, detail]) => (
+            <div class="border-b border-rule py-5">
+              <dt class="subtitle">{term}</dt>
+              <dd class="mt-2 text-graphite">{detail}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </div>
+
+    <section class="mt-16">
+      <h2 class="title">Claiming it</h2>
+      <ol class="mt-8 border-t border-rule">
+        {[
+          ['Tell us what came back', 'Message Cars911 with the booking reference and what the car is doing. You do not have to argue with the garage yourself.'],
+          ['The garage re-inspects', 'Usually within a working day. Bringing it back for a second look is free.'],
+          ['It gets put right', 'Covered work is redone at no charge. If the garage and you disagree, Cars911 reviews the job sheet and mediates.'],
+        ].map(([step, detail], i) => (
+          <li class="flex gap-6 border-b border-rule py-6 sm:gap-10">
+            <span class="tabular w-6 shrink-0 text-graphite">{i + 1}</span>
+            <div>
+              <h3 class="subtitle">{step}</h3>
+              <p class="mt-2 text-graphite">{detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="measure mt-8 text-graphite">
+        Warranty terms vary by garage and by job, and the term on your quote is the one that
+        applies. The full legal text is in the
+        <a href="/policies/warranty-policy/" class="link text-white">warranty policy</a>.
+      </p>
+    </section>
+  </div>
+
+  <CtaBand heading="Compare on warranty, not just price">
+    Every quote shows its term, so the cheapest and the best-covered are easy to tell apart.
+  </CtaBand>
+</BaseLayout>

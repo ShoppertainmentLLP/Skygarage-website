@@ -1,0 +1,18 @@
+---
+interface Props {
+  rating: number | null;
+  count?: number;
+}
+const { rating, count } = Astro.props;
+---
+
+{
+  rating ? (
+    <p class="text-[0.9375rem]">
+      <span class="tabular font-medium">{rating.toFixed(1)}</span>
+      <span class="text-graphite"> out of 5{count != null && ` from ${count} ${count === 1 ? 'review' : 'reviews'}`}</span>
+    </p>
+  ) : (
+    <p class="text-[0.9375rem] text-graphite">No reviews yet</p>
+  )
+}

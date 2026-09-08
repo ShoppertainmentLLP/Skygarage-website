@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getBrands } from '../../lib/queries';
+import { brandUrl } from '../../lib/urls';
+
+const brands = await getBrands();
+const origins = [...new Set(brands.map((b) => b.origin))];
+---
+
+<BaseLayout
+  title="Car servicing by brand — BMW, Mercedes, Audi, Toyota and Nissan"
+  description="Find UAE garages that specialise in your make. Compare quotes for BMW, Mercedes-Benz, Audi, Toyota and Nissan servicing and repair."
+>
+  <PageHead trail={[['/brands/', 'Brands']]} title="Servicing by brand">
+    Some jobs need a workshop that knows the make. Pick yours and see the garages that work on
+    it every day.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    {origins.map((origin, i) => (
+      <section class={i === 0 ? '' : 'mt-14'}>
+        <h2 class="title-sm">{origin} makes</h2>
+        <ul class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {brands.filter((b) => b.origin === origin).map((brand) => (
+            <li class="sheet flex flex-col p-6">
+              <h3 class="title-sm">
+                <a href={brandUrl(brand)} class="hover:text-gold-light">{brand.name}</a>
+              </h3>
+              <p class="mt-3 flex-1 text-[0.9375rem] text-graphite">{brand.tagline}</p>
+              <a href={brandUrl(brand)} class="link mt-5 self-start text-[0.9375rem]">
+                {brand.name} servicing
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="measure mt-14 text-graphite">
+      Driving something else? Every garage in the network is an all-makes workshop unless its
+      profile says otherwise — send a request and the ones that handle your car will quote.
+    </p>
+  </div>
+
+  <CtaBand heading="One request. Multiple quotes.">
+    Tell us the make and the job, and the garages that know it come back with prices.
+  </CtaBand>
+</BaseLayout>

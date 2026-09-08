@@ -1,0 +1,29 @@
+---
+import type { Faq } from '../lib/faqs';
+
+/*
+  Native <details> rather than a scripted accordion: it opens with JavaScript disabled, it is
+  keyboard-operable for free, and it costs no INP budget (§11.6). Pass the matching
+  faqSchema() to BaseLayout so the FAQPage markup and this list stay in step.
+*/
+interface Props {
+  faqs: Faq[];
+  class?: string;
+}
+const { faqs, class: klass = '' } = Astro.props;
+---
+
+<div class={`border-t border-rule ${klass}`}>
+  {faqs.map(([question, answer]) => (
+    <details class="group border-b border-rule">
+      <summary class="flex cursor-pointer list-none items-baseline justify-between gap-6 py-5">
+        <h3 class="subtitle">{question}</h3>
+        <span
+          class="mt-1 shrink-0 text-gold-light transition-transform group-open:rotate-45"
+          aria-hidden="true">+</span
+        >
+      </summary>
+      <p class="measure pb-6 leading-relaxed text-graphite">{answer}</p>
+    </details>
+  ))}
+</div>

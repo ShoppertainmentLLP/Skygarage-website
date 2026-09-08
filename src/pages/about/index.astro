@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { SITE } from '../../lib/site';
+---
+
+<BaseLayout
+  title="About Cars911 — the UAE's car service aggregator"
+  description="Cars911 connects UAE car owners with verified garages: one request, multiple quotes, honest comparisons. Trust. Choose. Cruise."
+>
+  <PageHead trail={[['/about/', 'About']]} title="About Cars911">
+    Getting a car fixed in the UAE means choosing between a dealer you can't argue with and a
+    street of garages you can't tell apart. Cars911 exists to fix that choice.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <p class="mt-4 leading-relaxed text-graphite">
+      We verify garages before they can quote, put their prices, warranties and reviews side by
+      side, and let the work go to whoever earns it. Owners save money; good garages win jobs on
+      merit. <strong class="text-white">{SITE.tagline}</strong> isn't a slogan so much as the
+      product itself: trust the network, choose your garage, get back on the road.
+    </p>
+
+    <h2 class="mt-10 title-sm">What we check before a garage joins</h2>
+    <ul class="mt-5 border-t border-rule">
+      {[
+        'Valid trade licence and insurance',
+        'Facility and equipment inspection',
+        'Workmanship spot checks on completed jobs',
+        'Customer history and complaint record',
+        'Written warranty terms',
+      ].map((item) => (
+        <li class="border-b border-rule py-3">{item}</li>
+      ))}
+    </ul>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a href="/about/how-it-works/" class="btn btn-primary">See how it works</a>
+      <a href="/about/contact/" class="btn btn-quiet">Contact us</a>
+    </div>
+  </div>
+
+  <CtaBand heading="Trust. Choose. Cruise.">See how it works with a real request of your own.</CtaBand>
+</BaseLayout>

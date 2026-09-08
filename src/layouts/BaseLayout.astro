@@ -1,0 +1,79 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FloatingCta from '../components/FloatingCta.astro';
+import { SITE } from '../lib/site';
+import Analytics from '../components/Analytics.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Extra JSON-LD objects to embed alongside the Organization schema. */
+  schema?: object[];
+  /** Pages that exist for navigation or conversion, not for search: category tiers, forms, admin. */
+  noindex?: boolean;
+  /** Overrides the self-referencing canonical — used where several paths render one page. */
+  canonicalPath?: string;
+}
+
+const { title, description = SITE.description, schema = [], noindex = false, canonicalPath } = Astro.props;
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, SITE.url).href;
+
+/* Page titles are written without the brand; one that already carries it keeps its own wording. */
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE.name,
+    url: SITE.url,
+    slogan: SITE.tagline,
+    telephone: SITE.phone,
+    areaServed: 'AE',
+  },
+  ...schema,
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#000000" />
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin-wdth-subset.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <Analytics />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-surface">
+      Skip to content
+    </a>
+    <Header />
+    <main id="main" class="flex-1 pb-16 md:pb-0">
+      <slot />
+    </main>
+    <Footer />
+    <FloatingCta />
+  </body>
+</html>

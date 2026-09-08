@@ -1,0 +1,25 @@
+---
+import { telLink } from '../lib/site';
+
+interface Props {
+  /** Dark sections invert the secondary action so it keeps a gold hairline on black. */
+  tone?: 'light' | 'dark';
+  /** Where "Book a car service" leads. Defaults to the quote request, the site's front door. */
+  bookHref?: string;
+  bookLabel?: string;
+  class?: string;
+}
+
+const { tone = 'light', bookHref = '/book-a-service/', bookLabel = 'Book a car service', class: klass = '' } =
+  Astro.props;
+---
+
+<div class={`flex flex-wrap items-center gap-3 ${klass}`}>
+  <a href={telLink()} class={`btn ${tone === 'dark' ? 'btn-quiet-dark' : 'btn-quiet'}`}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.25 1Z" />
+    </svg>
+    Call Us
+  </a>
+  <a href={bookHref} class="btn btn-primary">{bookLabel}</a>
+</div>

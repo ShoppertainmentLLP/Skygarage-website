@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHead from '../../../components/PageHead.astro';
+import CtaBand from '../../../components/CtaBand.astro';
+import { getArticles, categoryFromSlug, categorySlug, CATEGORY_BLURBS } from '../../../lib/articles';
+
+const { slug } = Astro.params;
+const category = categoryFromSlug(slug!);
+if (!category) return Astro.rewrite('/404/');
+
+const articles = await getArticles(category);
+const fmt = (d: Date) => d.toLocaleDateString('en-AE', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<BaseLayout title={`${category} — Cars911 blog`} description={CATEGORY_BLURBS[category]}>
+  <PageHead trail={[['/blog/', 'Blog'], ['', category]]} title={category}>
+    {CATEGORY_BLURBS[category]}
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    {articles.length === 0 ? (
+      <p class="text-graphite">Nothing here yet. New articles land in this section first.</p>
+    ) : (
+      <ul class="border-t border-rule">
+        {articles.map((a) => (
+          <li class="border-b border-rule py-6">
+            <h2 class="subtitle">
+              <a href={`/blog/${a.id}/`} class="hover:text-gold-light">{a.data.title}</a>
+            </h2>
+            <p class="measure mt-2 text-graphite">{a.data.description}</p>
+            <p class="mt-2 text-[0.9375rem] text-graphite">{fmt(a.data.publishedAt)}</p>
+          </li>
+        ))}
+      </ul>
+    )}
+    <a href="/blog/" class="link mt-10 inline-block">All blog sections</a>
+  </div>
+
+  <CtaBand heading="One request. Multiple quotes.">
+    Verified garages quote on your job, and you choose.
+  </CtaBand>
+</BaseLayout>

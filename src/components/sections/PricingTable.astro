@@ -1,0 +1,52 @@
+---
+import { bookUrl } from '../../lib/urls';
+
+/*
+  Priced options rather than a single range, because "what will this actually cost me" is the
+  question the page exists to answer. Prices are indicative — the garage's quote is the real
+  number — and the note under the table says so rather than burying it.
+*/
+interface Props {
+  heading: string;
+  items: { name: string; priceAed: number; from?: boolean; note?: string; includes: string[] }[];
+  serviceId?: number;
+  class?: string;
+}
+const { heading, items, serviceId, class: klass = '' } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class={klass}>
+    <h2 class="title">{heading}</h2>
+    <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {items.map((item, i) => (
+        <div class={`sheet flex flex-col p-6 ${i === 1 ? 'border-gold/50' : ''}`}>
+          <h3 class="subtitle">{item.name}</h3>
+          <p class="title mt-3">
+            <span class="tabular">
+              {item.from && <span class="text-[0.9375rem] font-normal text-graphite">from </span>}AED {item.priceAed}
+            </span>
+          </p>
+          {item.note && <p class="mt-2 text-[0.9375rem] text-graphite">{item.note}</p>}
+          {item.includes.length > 0 && (
+            <ul class="mt-5 flex-1 space-y-2 border-t border-rule pt-5 text-[0.9375rem] text-graphite">
+              {item.includes.map((line) => (
+                <li class="flex gap-2.5">
+                  <span class="mt-2 size-1 shrink-0 rounded-full bg-gold" aria-hidden="true"></span>
+                  {line}
+                </li>
+              ))}
+            </ul>
+          )}
+          <a href={bookUrl({ service: serviceId })} class={`mt-6 w-full ${i === 1 ? 'btn btn-primary' : 'btn btn-quiet'}`}>
+            Get quotes
+          </a>
+        </div>
+      ))}
+    </div>
+    <p class="mt-6 text-[0.9375rem] text-graphite">
+      Indicative prices for a typical car. Parts, engine size and condition move them — which is
+      why the garages quote on your car rather than on an average one.
+    </p>
+  </section>
+)}

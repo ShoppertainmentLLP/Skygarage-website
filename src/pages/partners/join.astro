@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { actions } from 'astro:actions';
+
+const result = Astro.getActionResult(actions.partnerLead);
+
+const reasons = [
+  ['Jobs, not clicks', 'You receive real quote requests from owners ready to book — not ad impressions.'],
+  ['Your prices, your call', 'You decide what to quote on and what to charge. Cars911 never sets your rates.'],
+  ['Reputation that compounds', 'Verified reviews build your profile; good work wins you the next comparison.'],
+];
+---
+
+<BaseLayout
+  title="Become a Cars911 partner garage"
+  description="Join the Cars911 network: receive quote requests from car owners in your area, quote your own prices and grow on verified reviews."
+>
+  <PageHead trail={[['/garages/', 'Garage network'], ['/partners/join/', 'Become a partner']]} title="Put your garage in front of the whole UAE" cta={false}>
+    Car owners on Cars911 describe a job once; garages like yours answer with a quote. Win
+    work on price, warranty and reputation.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <div class="grid gap-10 lg:grid-cols-2">
+      <div>
+        <dl class="border-t border-rule">
+          {reasons.map(([title, body]) => (
+            <div class="border-b border-rule py-5">
+              <dt class="subtitle">{title}</dt>
+              <dd class="mt-2 text-graphite">{body}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div>
+        {result && !result.error ? (
+          <div class="sheet p-6">
+            <h2 class="subtitle">Application received</h2>
+            <p class="mt-2 text-graphite">
+              Our partnerships team will call you to start verification — licensing, facilities and
+              workmanship checks.
+            </p>
+          </div>
+        ) : (
+          <form method="POST" action={actions.partnerLead} class="grid gap-4 sheet p-6">
+            <h2 class="subtitle">Apply to join</h2>
+            <div>
+              <label class="field-label" for="pt-garage">Garage name</label>
+              <input id="pt-garage" name="garageName" class="field" required minlength="2" />
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="pt-name">Contact name</label>
+                <input id="pt-name" name="contactName" class="field" required minlength="2" />
+              </div>
+              <div>
+                <label class="field-label" for="pt-phone">Phone</label>
+                <input id="pt-phone" name="phone" class="field" required inputmode="tel" />
+              </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="pt-email">Email (optional)</label>
+                <input id="pt-email" name="email" type="email" class="field" />
+              </div>
+              <div>
+                <label class="field-label" for="pt-area">Area / emirate</label>
+                <input id="pt-area" name="area" class="field" placeholder="e.g. Al Quoz, Dubai" />
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="pt-msg">Tell us about your garage</label>
+              <textarea id="pt-msg" name="message" rows="3" class="field" placeholder="Specialities, brands, years in business"></textarea>
+            </div>
+            {result?.error && (
+              <p class="rounded-[3px] bg-alert-wash p-3 text-sm font-semibold text-alert">
+                Could not send the application — check the required fields and try again.
+              </p>
+            )}
+            <button type="submit" class="btn btn-primary justify-self-start">Apply</button>
+          </form>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <CtaBand heading="Questions before you apply?">Call the partnerships team and talk it through.</CtaBand>
+</BaseLayout>

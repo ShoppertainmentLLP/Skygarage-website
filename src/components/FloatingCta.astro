@@ -1,0 +1,14 @@
+---
+import { telLink, waLink } from '../lib/site';
+const wa = waLink('Hi Cars911, I need help with my car.');
+---
+
+<!--
+  On phones the two things someone needs mid-problem sit within thumb reach; on desktop
+  the page is wide enough that a floating button would only cover content, so there is none.
+-->
+<div class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-gold/40 bg-ink text-[0.9375rem] font-medium text-white md:hidden">
+  <a href={telLink()} class="py-3.5 text-center active:bg-ink-raise">Call</a>
+  <a href={wa} class="border-x border-gold/30 py-3.5 text-center active:bg-ink-raise">WhatsApp</a>
+  <a href="/book-a-service/" class="bg-gold-bright py-3.5 text-center font-semibold text-ink">Get quotes</a>
+</div>

@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db/client';
+import { quoteRequests, requestStatus } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = Number(form.get('id'));
+  const status = String(form.get('status'));
+  if (id && (requestStatus.enumValues as string[]).includes(status)) {
+    await db
+      .update(quoteRequests)
+      .set({ status: status as (typeof requestStatus.enumValues)[number] })
+      .where(eq(quoteRequests.id, id));
+  }
+  return Astro.redirect('/admin/quotes/');
+}
+
+const rows = await db.query.quoteRequests.findMany({
+  orderBy: (q, { desc }) => desc(q.createdAt),
+  limit: 100,
+});
+const serviceNames = new Map(
+  (await db.query.services.findMany()).map((s) => [s.id, s.name]),
+);
+---
+
+<BaseLayout title="Quote requests" description="Cars911 administration.">
+  <div class="spine py-10">
+    <a href="/admin/" class="text-sm font-medium text-gold-light hover:underline">Back to dashboard</a>
+    <h1 class="mt-2 title">Quote requests</h1>
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full min-w-200 border-collapse bg-surface text-sm">
+        <thead>
+          <tr>
+            {['When', 'Customer', 'Vehicle', 'Service', 'Details', 'Status'].map((h) => (
+              <th class="border border-rule bg-surface-raise p-2.5 text-left font-medium">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((q) => (
+            <tr>
+              <td class="border border-rule p-2.5 whitespace-nowrap">{q.createdAt.toLocaleString('en-AE')}</td>
+              <td class="border border-rule p-2.5">
+                <span class="font-medium">{q.name}</span>
+                <span class="block text-graphite">{q.phone}</span>
+              </td>
+              <td class="border border-rule p-2.5">{q.vehicleMake} {q.vehicleModel} {q.vehicleYear ?? ''}</td>
+              <td class="border border-rule p-2.5">{q.serviceId ? serviceNames.get(q.serviceId) : 'Unspecified'}</td>
+              <td class="border border-rule p-2.5 max-w-60">{q.details || '—'}</td>
+              <td class="border border-rule p-2.5">
+                <form method="POST" class="flex items-center gap-2">
+                  <input type="hidden" name="id" value={q.id} />
+                  <select name="status" class="rounded-[3px] border border-rule px-2 py-1">
+                    {requestStatus.enumValues.map((s) => (
+                      <option value={s} selected={s === q.status}>{s}</option>
+                    ))}
+                  </select>
+                  <button type="submit" class="font-medium text-gold-light hover:underline">Save</button>
+                </form>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,93 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 720,
+      "h": 540,
+      "title": "Brief"
+    },
+    {
+      "file": "JobCard.dc.html",
+      "x": 0,
+      "y": 720,
+      "w": 1440,
+      "h": 2300,
+      "title": "Job card"
+    },
+    {
+      "file": "DispatchBoard.dc.html",
+      "x": 1560,
+      "y": 720,
+      "w": 1440,
+      "h": 2760,
+      "title": "Dispatch board"
+    },
+    {
+      "file": "Ledger.dc.html",
+      "x": 3120,
+      "y": 720,
+      "w": 1440,
+      "h": 2300,
+      "title": "Ledger"
+    },
+    {
+      "file": "JobCardDark.dc.html",
+      "x": 0,
+      "y": 3720,
+      "w": 1440,
+      "h": 2300,
+      "title": "Job card, dark"
+    },
+    {
+      "file": "DispatchBoardDark.dc.html",
+      "x": 1560,
+      "y": 3720,
+      "w": 1440,
+      "h": 2760,
+      "title": "Dispatch board, dark"
+    },
+    {
+      "file": "LedgerDark.dc.html",
+      "x": 3120,
+      "y": 3720,
+      "w": 1440,
+      "h": 2300,
+      "title": "Ledger, dark"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "job-card-note",
+      "x": 0,
+      "y": 600,
+      "w": 520,
+      "text": "Job card. Familjen Grotesk + Courier Prime. The memorable thing: the quotes literally fill in a garage job sheet, with a stamp."
+    },
+    {
+      "id": "dispatch-note",
+      "x": 1560,
+      "y": 600,
+      "w": 520,
+      "text": "Dispatch board. Barlow Condensed + Barlow (a face drawn from road signage). The memorable thing: quotes arrive with timestamps on a live board."
+    },
+    {
+      "id": "ledger-note",
+      "x": 3120,
+      "y": 600,
+      "w": 520,
+      "text": "Ledger. Bricolage Grotesque + Schibsted Grotesk. The memorable thing: 112px prices; your request stays fixed on the left as the page scrolls."
+    },
+    {
+      "id": "dark-row-note",
+      "x": 0,
+      "y": 3600,
+      "w": 720,
+      "text": "Dark versions of the same three. Deliberately different blacks: warm black under the paper job card, true black for the dispatch board, deep navy for the ledger. Same type, same content."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

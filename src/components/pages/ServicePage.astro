@@ -1,0 +1,196 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../CtaBand.astro';
+import PageHead from '../PageHead.astro';
+import GarageCard from '../GarageCard.astro';
+import FaqAccordion from '../FaqAccordion.astro';
+import FeatureList from '../sections/FeatureList.astro';
+import PricingTable from '../sections/PricingTable.astro';
+import ProcessSteps from '../sections/ProcessSteps.astro';
+import ServiceReviews from '../sections/ServiceReviews.astro';
+import RelatedServices from '../sections/RelatedServices.astro';
+import QuoteForm from '../../islands/QuoteForm.svelte';
+import { db } from '../../db/client';
+import { getEntry, render } from 'astro:content';
+import { getEmirates, getRatings, getServiceReviews, summariseReviews } from '../../lib/queries';
+import { priceLabel, waLink, SITE, telLink } from '../../lib/site';
+import { faqSchema } from '../../lib/faqs';
+import { serviceLocationUrl } from '../../lib/urls';
+
+interface Props {
+  service: any;
+}
+
+const { service } = Astro.props;
+
+/*
+  The long-form half of the page comes from src/content/services/<slug>.md. A service without a
+  file yet still renders everything the database can supply — the sections simply do not appear —
+  so copy can land service by service instead of in one release.
+*/
+const copy = await getEntry('serviceCopy', service.slug);
+const Body = copy ? (await render(copy)).Content : null;
+
+const providers = service.garageServices.map((gs: any) => gs.garage).filter((g: any) => g.active);
+const [ratings, emirates, reviews, related] = await Promise.all([
+  getRatings(providers.map((g: any) => g.id)),
+  getEmirates(),
+  getServiceReviews(service.id),
+  copy?.data.related.length
+    ? db.query.services.findMany({ where: (s, { inArray }) => inArray(s.slug, copy.data.related) })
+    : Promise.resolve([]),
+]);
+const summary = summariseReviews(reviews);
+
+if (import.meta.env.DEV && copy) {
+  const missing = copy.data.related.filter((slug) => !related.some((r: any) => r.slug === slug));
+  if (missing.length > 0) console.warn(`[serviceCopy:${service.slug}] unknown related slugs: ${missing.join(', ')}`);
+}
+
+const heading = copy?.data.heading ?? `${service.name} in Dubai`;
+const faqs = (copy?.data.faqs ?? []).map((f) => [f.q, f.a] as [string, string]);
+
+const serviceSchema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: heading,
+  description: copy?.data.metaDescription ?? service.excerpt,
+  serviceType: service.name,
+  areaServed: 'AE',
+  provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+};
+if (copy?.data.pricing.length) {
+  serviceSchema.offers = copy.data.pricing.map((p) => ({
+    '@type': 'Offer',
+    name: p.name,
+    price: p.priceAed,
+    priceCurrency: 'AED',
+  }));
+}
+// Only reviews left about this job feed the rating, so the markup matches what the page shows.
+if (summary) {
+  serviceSchema.aggregateRating = {
+    '@type': 'AggregateRating',
+    ratingValue: summary.avg,
+    reviewCount: summary.count,
+    bestRating: 5,
+  };
+  serviceSchema.review = reviews.slice(0, 6).map((r) => ({
+    '@type': 'Review',
+    author: { '@type': 'Person', name: r.authorName },
+    reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+    reviewBody: r.comment,
+    datePublished: r.createdAt.toISOString().slice(0, 10),
+  }));
+}
+
+const schema: object[] = [serviceSchema];
+if (faqs.length > 0) schema.push(faqSchema(faqs));
+---
+
+<BaseLayout
+  title={copy?.data.metaTitle ?? `${service.name} in Dubai — compare garage quotes`}
+  description={copy?.data.metaDescription ?? service.excerpt}
+  schema={schema}
+>
+  <PageHead trail={[['/services/', 'Services'], ['', service.name]]} title={heading}>
+    {service.excerpt}
+  </PageHead>
+
+  <div class="spine pt-14 pb-16">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <dl class="flex flex-wrap gap-x-12 gap-y-5 border-b border-rule pb-7">
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Typical price</dt>
+            <dd class="title-sm mt-1">{priceLabel(service.priceFromAed, service.priceToAed)}</dd>
+          </div>
+          {service.durationLabel && (
+            <div>
+              <dt class="text-[0.9375rem] text-graphite">Typical duration</dt>
+              <dd class="title-sm mt-1">{service.durationLabel}</dd>
+            </div>
+          )}
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Garages doing this job</dt>
+            <dd class="title-sm mt-1 tabular">{providers.length}</dd>
+          </div>
+        </dl>
+
+        {Body ? (
+          <div class="prose-cars mt-10">
+            <Body />
+          </div>
+        ) : (
+          <p class="measure mt-10 text-lg leading-relaxed text-graphite">{service.description}</p>
+        )}
+      </div>
+
+      <!-- The form itself, not a link to it: the spec asks for the lead capture on the page. -->
+      <aside class="lg:col-span-5">
+        <div class="lg:sticky lg:top-24">
+          <div class="sheet p-6">
+            <h2 class="title-sm">Get {service.name.toLowerCase()} quotes</h2>
+            <p class="mt-2 text-[0.9375rem] text-graphite">
+              Free, no obligation. Verified garages that do this job reply with real prices.
+            </p>
+            <div class="mt-5">
+              <QuoteForm client:visible services={[{ id: service.id, name: service.name, group: 'Service' }]} locations={emirates.map((l) => ({ id: l.id, name: l.name }))} preselectedServiceId={service.id} />
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a href={waLink(`Hi Cars911, I need ${service.name} for my car.`)} class="btn btn-quiet-dark flex-1">WhatsApp us</a>
+            <a href={telLink()} class="btn btn-quiet-dark flex-1">Call us</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="spine pb-8">
+    <FeatureList heading={`What ${service.name.toLowerCase()} includes`} items={copy?.data.included ?? []} class="band" />
+    <PricingTable heading={`${service.name} prices in Dubai`} items={copy?.data.pricing ?? []} serviceId={service.id} class="band" />
+    <ProcessSteps heading="How the job runs" items={copy?.data.process ?? []} class="band" />
+    <FeatureList heading={`Why book ${service.name.toLowerCase()} through Cars911`} items={copy?.data.why ?? []} columns={3} class="band" />
+
+    {providers.length > 0 && (
+      <section class="band">
+        <h2 class="title">Garages that do this job</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {providers.map((g: any) => (
+            <GarageCard garage={g} rating={ratings.get(g.id)} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <ServiceReviews heading={`${service.name} reviews`} reviews={reviews} summary={summary} class="band" />
+
+    {faqs.length > 0 && (
+      <section class="band">
+        <h2 class="title">{service.name} questions</h2>
+        <FaqAccordion faqs={faqs} class="mt-8" />
+      </section>
+    )}
+
+    <RelatedServices heading="Often booked with this" services={related} class="band" />
+
+    <section class="band">
+      <h2 class="title-sm">{service.name} by emirate</h2>
+      <ul class="mt-6 flex flex-wrap gap-2.5">
+        {emirates.map((l) => (
+          <li>
+            <a
+              href={serviceLocationUrl(service, l)}
+              class="inline-block rounded-[3px] border border-rule px-3 py-1.5 text-sm font-medium hover:border-gold hover:text-gold-light"
+            >
+              {service.name} in {l.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <CtaBand heading="One request. Multiple quotes.">Verified garages quote on this job, and you choose.</CtaBand>
+</BaseLayout>

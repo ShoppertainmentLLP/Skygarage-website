@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import GarageCard from '../../components/GarageCard.astro';
+import { getActiveGarages, getRatings } from '../../lib/queries';
+
+const garages = await getActiveGarages();
+const ratings = await getRatings(garages.map((g) => g.id));
+
+const tiers = [
+  ['premium', 'Premium garages', 'Dealer-level equipment, genuine parts and longer warranties.'],
+  ['verified', 'Verified garages', 'Independently vetted workshops with proven track records and fair pricing.'],
+  ['mobile', 'Mobile mechanics', 'The garage comes to you — ideal for batteries, minor services and diagnostics.'],
+] as const;
+---
+
+<!--
+  This page carries the "garage in Dubai" and "car workshop" searches (audit §9.1/§9.2). They
+  are directory intent, not service intent — someone looking for a workshop, not for a named
+  job — so they belong on the directory rather than as invented service rows that would then
+  appear in the quote form's service list.
+-->
+<BaseLayout
+  title="Car Garages in Dubai — the vetted Cars911 workshop network"
+  description="Find a car garage in Dubai: premium workshops, verified all-makes garages and mobile mechanics, each audited on licensing, workmanship and customer history before it can quote."
+>
+  <PageHead trail={[['/garages/', 'Garage network']]} title="Car Garages and Workshops in Dubai">
+    No garage buys its way in. Each one is checked for licensing, workmanship and customer
+    history before it can quote on your car.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <div class="prose-cars">
+      <p>
+        A car workshop in Dubai can be anything from a single-bay unit in Al Quoz to a
+        dealer-equivalent facility with its own body shop. They are not interchangeable, and the
+        price for the same job across them can differ two-fold. This directory exists so you can
+        see which is which before you hand over the keys.
+      </p>
+      <p>
+        Every workshop listed here has passed a 100-point audit: a valid trade licence and
+        insurance, a facility and equipment inspection, workmanship spot checks on completed
+        jobs, its customer and complaint history, and written warranty terms. Garages that
+        cannot produce those documents do not appear, and no garage can pay to be listed.
+      </p>
+      <p>
+        If you would rather not choose one yourself,
+        <a href="/book-a-service/">describe the job once</a> and the workshops that do it in your
+        area will come back with written prices you can compare side by side.
+      </p>
+    </div>
+    {tiers.map(([tier, heading, blurb]) => {
+      const list = garages.filter((g) => g.tier === tier);
+      return list.length > 0 ? (
+        <section class="mt-12">
+          <h2 class="title-sm">{heading}</h2>
+          <p class="mt-1 max-w-prose text-graphite">{blurb}</p>
+          <div class="mt-4 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {list.map((g) => (
+              <GarageCard garage={g} rating={ratings.get(g.id)} />
+            ))}
+          </div>
+        </section>
+      ) : null;
+    })}
+
+    <div class="mt-14 rounded-[3px] bg-gold-wash p-8 md:flex md:items-center md:justify-between">
+      <div>
+        <h2 class="title-sm">Run a garage?</h2>
+        <p class="mt-1 text-graphite">Join the network and quote on jobs in your area.</p>
+      </div>
+      <a href="/partners/join/" class="btn btn-primary mt-4 md:mt-0">Become a partner</a>
+    </div>
+  </div>
+
+  <CtaBand heading="Let the network quote your job.">One request reaches every garage that handles it in your area.</CtaBand>
+</BaseLayout>

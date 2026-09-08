@@ -1,0 +1,6 @@
+---
+// Old /resources/guides/... and /resources/blog/... article URLs now live under /blog.
+const rest = Astro.params.rest ?? '';
+const slug = rest.split('/').filter(Boolean).pop();
+return Astro.redirect(slug ? `/blog/${slug}/` : '/blog/', 301);
+---

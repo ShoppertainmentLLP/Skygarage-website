@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../CtaBand.astro';
+import PageHead from '../PageHead.astro';
+import { priceLabel } from '../../lib/site';
+import { bookUrl, serviceUrl } from '../../lib/urls';
+
+/*
+  The spec has no category tier — services are indexed one level under /services/. These pages
+  stay because the navigation and the homepage grid lean on them, but they are noindex/follow
+  and canonicalise to the services index so they never compete with the service pages
+  themselves (audit §8.2).
+*/
+interface Props {
+  category: any;
+}
+
+const { category } = Astro.props;
+---
+
+<BaseLayout
+  title={`${category.name} services in the UAE`}
+  description={category.description}
+  noindex
+  canonicalPath="/services/"
+>
+  <PageHead trail={[['/services/', 'Services'], ['', category.name]]} title={category.name}>
+    {category.description}
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <ul class="mt-8 grid gap-5 md:grid-cols-2">
+      {category.services.map((s: any) => (
+        <li class="rounded-[3px] border border-rule bg-surface p-5">
+          <h2 class="subtitle">
+            <a href={serviceUrl(s)} class="hover:text-gold-light">{s.name}</a>
+          </h2>
+          <p class="mt-2 text-sm leading-relaxed text-graphite">{s.excerpt}</p>
+          <p class="mt-3 text-sm">
+            <span class="font-medium">{priceLabel(s.priceFromAed, s.priceToAed)}</span>
+            {s.durationLabel && <span class="text-graphite"> · {s.durationLabel}</span>}
+          </p>
+          <a href={bookUrl({ service: s.id })} class="mt-4 inline-block font-medium text-gold-light hover:underline">
+            Get quotes for this
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <CtaBand heading="One request. Multiple quotes.">Verified garages quote on your job, and you choose.</CtaBand>
+</BaseLayout>

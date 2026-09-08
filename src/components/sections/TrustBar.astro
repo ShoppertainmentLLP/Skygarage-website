@@ -1,0 +1,47 @@
+---
+import { NAP, SITE } from '../../lib/site';
+
+/*
+  Sheet item 3. Everything here is a fact the site can stand behind today; the Google rating,
+  the years-operating figure and the certification logos appear only once NAP in lib/site.ts is
+  filled in, because a trust bar that invents its own proof is worse than no trust bar.
+*/
+const years = NAP.foundedYear ? new Date().getFullYear() - NAP.foundedYear : null;
+
+const facts: { value: string; label: string }[] = [
+  { value: '100-point', label: 'audit before a garage can quote' },
+  { value: 'Free', label: 'to compare, with no obligation to book' },
+  { value: '24/7', label: 'roadside assistance across the UAE' },
+  { value: 'Up to 24 mo', label: 'workmanship warranty, written on the quote' },
+];
+if (NAP.googleRating && NAP.googleReviewCount) {
+  facts.unshift({
+    value: `${NAP.googleRating.toFixed(1)} ★`,
+    label: `from ${NAP.googleReviewCount.toLocaleString('en-GB')} Google reviews`,
+  });
+}
+if (years) facts.push({ value: `${years} years`, label: `of ${SITE.name} in the UAE` });
+---
+
+<section class="border-y border-rule bg-ink-raise">
+  <div class="spine py-8">
+    <ul class="grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+      {facts.slice(0, 4).map((f) => (
+        <li>
+          <p class="title-sm text-gold-light">{f.value}</p>
+          <p class="mt-1 text-[0.9375rem] text-graphite">{f.label}</p>
+        </li>
+      ))}
+    </ul>
+
+    {NAP.certifications.length > 0 && (
+      <ul class="mt-8 flex flex-wrap items-center gap-x-10 gap-y-5 border-t border-rule pt-6">
+        {NAP.certifications.map((c) => (
+          <li>
+            <img src={c.logo} alt={`${c.name} — Cars911 certification`} height="32" class="h-8 w-auto opacity-80" loading="lazy" />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>

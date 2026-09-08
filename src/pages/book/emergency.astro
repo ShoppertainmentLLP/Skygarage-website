@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import { actions } from 'astro:actions';
+import { telLink, waLink, phoneDisplay } from '../../lib/site';
+
+const result = Astro.getActionResult(actions.bookService);
+---
+
+<BaseLayout
+  title="Emergency car help in the UAE — fast response"
+  description="Broken down or car won't start? Reach Cars911 by WhatsApp or phone for immediate roadside help, or send an emergency booking."
+>
+  <PageHead cta={false} trail={[['/book/emergency/', 'Emergency booking']]} title="Emergency booking" />
+
+  <div class="spine-narrow pt-14 pb-20">
+    <div class="mt-8 border-l-2 border-alert bg-alert-wash p-6">
+      <h2 class="subtitle text-alert">Need help right now?</h2>
+      <p class="mt-1 text-graphite">Skip the form — message or call and we dispatch immediately.</p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href={waLink('EMERGENCY: my car has broken down. Location: ')} class="btn bg-whatsapp text-white hover:opacity-90">
+          WhatsApp now
+        </a>
+        <a href={telLink()} class="rounded-[3px] bg-alert px-5 py-3 font-medium text-white hover:opacity-90">
+          Call {phoneDisplay()}
+        </a>
+      </div>
+    </div>
+
+    <p class="mt-8 text-lg text-graphite">
+      Not urgent to the minute? Send an emergency booking and the nearest available garage calls
+      you back with an arrival window.
+    </p>
+
+    {result && !result.error ? (
+      <div class="mt-6 sheet p-6">
+        <h2 class="subtitle">Emergency request received — #{result.data.id}</h2>
+        <p class="mt-2 text-graphite">The nearest available garage is being contacted. Keep your phone close.</p>
+      </div>
+    ) : (
+      <form method="POST" action={actions.bookService} class="mt-6 grid gap-5 rounded-[3px] bg-surface p-6">
+        <input type="hidden" name="type" value="emergency" />
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="field-label" for="em-name">Your name</label>
+            <input id="em-name" name="name" class="field" required minlength="2" />
+          </div>
+          <div>
+            <label class="field-label" for="em-phone">Phone</label>
+            <input id="em-phone" name="phone" class="field" required inputmode="tel" placeholder="+971 50 123 4567" />
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="em-notes">What happened, and where are you?</label>
+          <textarea
+            id="em-notes"
+            name="notes"
+            rows="4"
+            class="field"
+            required
+            placeholder="e.g. Car won't start, Sheikh Zayed Road near exit 41, white Nissan Patrol"
+          ></textarea>
+        </div>
+        {result?.error && (
+          <p class="rounded-[3px] bg-alert-wash p-3 text-sm font-semibold text-alert">
+            Could not send the request — check your details and try again, or use WhatsApp above.
+          </p>
+        )}
+        <button type="submit" class="rounded-[3px] bg-alert px-6 py-3 font-medium text-white hover:opacity-90 justify-self-start">
+          Send emergency request
+        </button>
+      </form>
+    )}
+  </div>
+</BaseLayout>

@@ -1,0 +1,66 @@
+---
+import { db } from '../../db/client';
+import ServicePage from '../../components/pages/ServicePage.astro';
+import ServiceLocationPage from '../../components/pages/ServiceLocationPage.astro';
+import CategoryPage from '../../components/pages/CategoryPage.astro';
+import { serviceUrl, splitServiceLocation } from '../../lib/urls';
+
+/*
+  One segment carries every /services/ page, because the spec puts service pages two levels
+  deep and the "service in area" pages can't sit a level below them without breaking the
+  depth rule (§8.2). Resolution order, most canonical first:
+
+    car-detailing-dubai      the service page, at its editable seoSlug
+    detailing-in-al-quoz     the service × location crossover
+    detailing                the old internal slug — 301 to the seoSlug, never rendered
+    body-shop                a category, kept for navigation but noindexed
+*/
+const slug = Astro.params.slug!;
+
+const withProviders = {
+  category: true,
+  garageServices: { with: { garage: true } },
+} as const;
+
+let service = await db.query.services.findFirst({
+  where: (s, { eq }) => eq(s.seoSlug, slug),
+  with: withProviders,
+});
+
+let location = null;
+if (!service) {
+  for (const [svcSlug, locSlug] of splitServiceLocation(slug)) {
+    const [svc, loc] = await Promise.all([
+      db.query.services.findFirst({ where: (s, { eq }) => eq(s.slug, svcSlug), with: withProviders }),
+      db.query.locations.findFirst({
+        where: (l, { eq }) => eq(l.slug, locSlug),
+        with: { parent: true, garageLocations: true },
+      }),
+    ]);
+    if (svc && loc) {
+      service = svc;
+      location = loc;
+      break;
+    }
+  }
+}
+
+// A bare internal slug is the pre-restructure URL: send it straight to the canonical one.
+if (!service) {
+  const legacy = await db.query.services.findFirst({ where: (s, { eq }) => eq(s.slug, slug) });
+  if (legacy) return Astro.redirect(serviceUrl(legacy), 301);
+}
+
+const category = service
+  ? null
+  : await db.query.serviceCategories.findFirst({
+      where: (c, { eq }) => eq(c.slug, slug),
+      with: { services: { orderBy: (s, { asc }) => asc(s.sort) } },
+    });
+
+if (!service && !category) return Astro.rewrite('/404/');
+---
+
+{service && location && <ServiceLocationPage service={service} location={location} />}
+{service && !location && <ServicePage service={service} />}
+{category && <CategoryPage category={category} />}

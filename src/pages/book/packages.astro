@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import PageHead from '../../components/PageHead.astro';
+import { db } from '../../db/client';
+
+const packages = await db.query.servicePackages.findMany({
+  orderBy: (p, { asc }) => asc(p.sort),
+});
+---
+
+<BaseLayout
+  title="Service packages — fixed-price car care bundles"
+  description="Fixed-price service packages from Cars911: Essential, Complete and Premium care bundles with transparent inclusions and warranties."
+>
+  <PageHead trail={[['/book/packages/', 'Service packages']]} title="Service packages">
+    Fixed prices, published inclusions, no surprises at pickup. Every package is honoured by all
+    participating garages.
+  </PageHead>
+
+  <div class="spine pt-14 pb-20">
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      {packages.map((pkg, i) => (
+        <article class="sheet flex flex-col p-6">
+          <h2 class="title-sm">{pkg.name}</h2>
+          <p class="mt-1 text-[0.9375rem] text-graphite">{pkg.description}</p>
+          <p class="figure mt-6 text-[2.25rem] leading-none">AED {pkg.priceAed.toLocaleString()}</p>
+          <p class="mt-1.5 text-[0.9375rem] text-graphite">
+            Per visit{i === 1 ? ', and the one most owners choose' : ''}
+          </p>
+          <ul class="mt-6 flex-1 border-t border-rule text-[0.9375rem]">
+            {pkg.features.map((f) => (
+              <li class="border-b border-rule py-2.5">{f}</li>
+            ))}
+          </ul>
+          <a href="/book/appointment/" class={`mt-6 w-full ${i === 1 ? 'btn btn-primary' : 'btn btn-quiet'}`}>
+            Book {pkg.name}
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-8 max-w-prose text-sm text-graphite">
+      Packages cover cars up to 3.5t. Parts beyond listed inclusions are quoted before any work
+      starts — you approve everything first.
+    </p>
+  </div>
+
+  <CtaBand heading="Need something outside a package?">Describe the job and compare quotes for exactly that work.</CtaBand>
+</BaseLayout>

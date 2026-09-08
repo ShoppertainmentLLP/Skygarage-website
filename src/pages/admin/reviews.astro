@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db/client';
+import { reviews } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = Number(form.get('id'));
+  const verb = String(form.get('verb'));
+  if (id && verb === 'approve') {
+    await db.update(reviews).set({ approved: true }).where(eq(reviews.id, id));
+  } else if (id && verb === 'delete') {
+    await db.delete(reviews).where(eq(reviews.id, id));
+  }
+  return Astro.redirect('/admin/reviews/');
+}
+
+const pending = await db.query.reviews.findMany({
+  where: (r, { eq }) => eq(r.approved, false),
+  orderBy: (r, { desc }) => desc(r.createdAt),
+  with: { garage: true },
+});
+---
+
+<BaseLayout title="Review moderation" description="Cars911 administration.">
+  <div class="spine-narrow py-10">
+    <a href="/admin/" class="text-sm font-medium text-gold-light hover:underline">Back to dashboard</a>
+    <h1 class="mt-2 title">Reviews awaiting approval</h1>
+
+    {pending.length === 0 ? (
+      <p class="mt-6 text-graphite">Queue is clear — nothing waiting.</p>
+    ) : (
+      <ul class="mt-6 space-y-4">
+        {pending.map((r) => (
+          <li class="rounded-[3px] border border-rule bg-surface p-5">
+            <p class="text-sm text-graphite">
+              For <span class="font-medium text-white">{r.garage.name}</span> ·
+              {r.createdAt.toLocaleString('en-AE')}
+            </p>
+            <p class="mt-2">
+              <span class="font-medium">{r.authorName}</span>
+              <span class="ml-2 text-gold">{'★'.repeat(r.rating)}</span>
+            </p>
+            {r.comment && <p class="mt-1 text-graphite">{r.comment}</p>}
+            <div class="mt-4 flex gap-3">
+              <form method="POST">
+                <input type="hidden" name="id" value={r.id} />
+                <input type="hidden" name="verb" value="approve" />
+                <button type="submit" class="btn btn-primary px-4 py-2">Approve</button>
+              </form>
+              <form method="POST">
+                <input type="hidden" name="id" value={r.id} />
+                <input type="hidden" name="verb" value="delete" />
+                <button type="submit" class="rounded-[3px] border-2 border-alert px-4 py-2 font-medium text-alert hover:bg-alert hover:text-white">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</BaseLayout>

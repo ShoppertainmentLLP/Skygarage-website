@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import { actions } from 'astro:actions';
+import { getCategoriesWithServices, getEmirates, getActiveGarages } from '../../lib/queries';
+
+const [categories, emirates, garages] = await Promise.all([
+  getCategoriesWithServices(),
+  getEmirates(),
+  getActiveGarages(),
+]);
+
+const result = Astro.getActionResult(actions.bookService);
+const preService = Astro.url.searchParams.get('service') ?? '';
+const preGarage = Astro.url.searchParams.get('garage') ?? '';
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title="Book a car service appointment — with optional pick & drop"
+  description="Book a service appointment with a Cars911 garage. Add free pick & drop and we collect your car, service it and return it."
+>
+  <PageHead cta={false} trail={[['/book/appointment/', 'Book appointment']]} title="Book an appointment">
+    Know what you need? Book a slot directly.
+  </PageHead>
+
+  <div class="spine-narrow pt-14 pb-20">
+    <p class="mt-3 text-graphite">
+      Prefer to see prices first? <a href="/book-a-service/" class="link text-white">Get an instant quote</a>.
+    </p>
+
+    {result && !result.error ? (
+      <div class="mt-8 sheet p-6">
+        <h2 class="subtitle">Booking received — reference #{result.data.id}</h2>
+        <p class="mt-2 text-graphite">
+          We'll confirm your slot by phone or WhatsApp shortly. If you chose pick &amp; drop, the
+          driver's details come with the confirmation.
+        </p>
+      </div>
+    ) : (
+      <form method="POST" action={actions.bookService} class="mt-8 grid gap-5 rounded-[3px] bg-surface p-6">
+        <input type="hidden" name="type" value="appointment" />
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="field-label" for="bk-name">Your name</label>
+            <input id="bk-name" name="name" class="field" required minlength="2" autocomplete="name" />
+          </div>
+          <div>
+            <label class="field-label" for="bk-phone">Phone</label>
+            <input id="bk-phone" name="phone" class="field" required inputmode="tel" autocomplete="tel" placeholder="+971 50 123 4567" />
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label" for="bk-service">Service</label>
+          <select id="bk-service" name="serviceId" class="field">
+            <option value="">Not sure yet</option>
+            {categories.map((c) => (
+              <optgroup label={c.name}>
+                {c.services.map((s) => (
+                  <option value={s.id} selected={String(s.id) === preService}>{s.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="field-label" for="bk-garage">Preferred garage (optional)</label>
+            <select id="bk-garage" name="garageId" class="field">
+              <option value="">Let Cars911 match me</option>
+              {garages.map((g) => (
+                <option value={g.id} selected={String(g.id) === preGarage}>{g.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="bk-location">Your emirate</label>
+            <select id="bk-location" name="locationId" class="field">
+              <option value="">Select</option>
+              {emirates.map((l) => (
+                <option value={l.id}>{l.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="field-label" for="bk-date">Preferred date</label>
+            <input id="bk-date" name="preferredDate" type="date" min={today} class="field" />
+          </div>
+          <div>
+            <label class="field-label" for="bk-slot">Preferred time</label>
+            <select id="bk-slot" name="preferredSlot" class="field">
+              <option value="">Any time</option>
+              <option>Morning (8am–12pm)</option>
+              <option>Afternoon (12pm–4pm)</option>
+              <option>Evening (4pm–8pm)</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="flex items-center gap-3 rounded-[3px] border border-rule bg-surface-raise px-4 py-3">
+          <input type="checkbox" name="pickAndDrop" value="true" class="size-4 accent-gold-bright" />
+          <span>
+            <span class="font-medium">Add pick &amp; drop</span>
+            <span class="block text-sm text-graphite">We collect your car, service it and return it.</span>
+          </span>
+        </label>
+
+        <div>
+          <label class="field-label" for="bk-notes">Anything the garage should know?</label>
+          <textarea id="bk-notes" name="notes" rows="3" class="field"></textarea>
+        </div>
+
+        {result?.error && (
+          <p class="rounded-[3px] bg-alert-wash p-3 text-sm font-semibold text-alert">
+            Could not submit the booking — check your name and phone number and try again.
+          </p>
+        )}
+        <button type="submit" class="btn btn-primary justify-self-start">Book appointment</button>
+      </form>
+    )}
+  </div>
+</BaseLayout>

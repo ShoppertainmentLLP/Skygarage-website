@@ -1,0 +1,50 @@
+---
+import { getArticles, categorySlug } from '../lib/articles';
+
+/*
+  The blog's newest, as cards. Hero images are optional in the collection, and a row where one
+  card has a photo and two do not reads as broken rather than varied — so images appear only
+  when every card in the row has one. Give the remaining articles a hero and this turns itself
+  on.
+*/
+interface Props {
+  limit?: number;
+  class?: string;
+}
+const { limit = 3, class: klass = '' } = Astro.props;
+const articles = (await getArticles()).slice(0, limit);
+const withImages = articles.every((a) => a.data.image);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<ul class={`grid gap-6 md:grid-cols-3 ${klass}`}>
+  {articles.map((a) => (
+    <li class="sheet flex flex-col overflow-hidden">
+      {withImages && a.data.image && (
+        <img
+          src={a.data.image}
+          alt={a.data.imageAlt ?? ''}
+          width="640"
+          height="360"
+          loading="lazy"
+          decoding="async"
+          class="aspect-video w-full object-cover"
+        />
+      )}
+      <div class="flex flex-1 flex-col p-6">
+        <p class="text-[0.9375rem] text-graphite">
+          <a href={`/blog/category/${categorySlug(a.data.category)}/`} class="hover:text-gold-light">
+            {a.data.category}
+          </a>
+        </p>
+        <h3 class="title-sm mt-2">
+          <a href={`/blog/${a.id}/`} class="hover:text-gold-light">{a.data.title}</a>
+        </h3>
+        <p class="mt-3 flex-1 text-[0.9375rem] leading-relaxed text-graphite">{a.data.description}</p>
+        <p class="mt-4 text-[0.9375rem] text-graphite">{fmt(a.data.publishedAt)}</p>
+      </div>
+    </li>
+  ))}
+</ul>

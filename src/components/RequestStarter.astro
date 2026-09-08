@@ -1,0 +1,92 @@
+---
+import { SITE } from '../lib/site';
+
+interface Props {
+  services: { id: number; name: string; group?: string }[];
+  locations: { id: number; name: string }[];
+}
+
+const { services, locations } = Astro.props;
+const groups = [...new Set(services.map((s) => s.group))];
+
+/*
+  The paid campaigns all promise "just WhatsApp us", and WhatsApp is where the conversations
+  actually happen, so the hero starts the request in that channel rather than describing it.
+  The two answers build the opening message; the site form stays one link away for anyone
+  who would rather type it out here.
+*/
+const openingMessage = 'Hi Cars911 — I need a quote for my car.';
+const defaultWa = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(openingMessage)}`;
+---
+
+<form class="sheet-dark p-6" data-starter data-wa-number={SITE.whatsapp} onsubmit="return false">
+  <p class="title-sm">Start your request</p>
+  <p class="mt-1.5 text-[0.9375rem] text-graphite">
+    Two questions. Verified garages in your area reply with prices.
+  </p>
+
+  <label class="field-label mt-6" for="rs-service">What does your car need?</label>
+  <select id="rs-service" class="field" data-service>
+    <option value="">Not sure — let garages advise</option>
+    {groups.map((group) => (
+      <optgroup label={group}>
+        {services.filter((s) => s.group === group).map((s) => (
+          <option value={s.id} data-name={s.name}>{s.name}</option>
+        ))}
+      </optgroup>
+    ))}
+  </select>
+
+  <label class="field-label mt-4" for="rs-location">Where are you?</label>
+  <select id="rs-location" class="field" data-location>
+    <option value="">Anywhere in the UAE</option>
+    {locations.map((l) => (
+      <option value={l.id} data-name={l.name}>{l.name}</option>
+    ))}
+  </select>
+
+  <a href={defaultWa} class="btn btn-primary mt-6 w-full" data-wa>
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.39a9.86 9.86 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.44 9.9-9.9 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.39c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.22 8.24c0 4.54-3.69 8.24-8.23 8.24Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.53.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.09-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.84-.2-.49-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.24-.85.83-.85 2.03s.87 2.35.99 2.51c.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29Z" />
+    </svg>
+    Send on WhatsApp
+  </a>
+
+  <p class="mt-3.5 text-center text-[0.9375rem] text-graphite">
+    or <a href="/book-a-service/" class="link text-white" data-continue>fill it in here instead</a>
+  </p>
+</form>
+
+<script>
+  // Both routes out of the card carry whatever has been chosen, so nothing is retyped.
+  document.querySelectorAll<HTMLFormElement>('[data-starter]').forEach((form) => {
+    const service = form.querySelector<HTMLSelectElement>('[data-service]')!;
+    const location = form.querySelector<HTMLSelectElement>('[data-location]')!;
+    const wa = form.querySelector<HTMLAnchorElement>('[data-wa]')!;
+    const cont = form.querySelector<HTMLAnchorElement>('[data-continue]')!;
+    const number = form.dataset.waNumber;
+
+    const nameOf = (el: HTMLSelectElement) =>
+      el.selectedOptions[0]?.dataset.name ?? '';
+
+    function update() {
+      const job = nameOf(service);
+      const where = nameOf(location);
+
+      let message = 'Hi Cars911 — I need a quote for my car.';
+      if (job && where) message = `Hi Cars911 — I need a quote for ${job} in ${where}. My car is: `;
+      else if (job) message = `Hi Cars911 — I need a quote for ${job}. My car is: `;
+      else if (where) message = `Hi Cars911 — I need a quote for my car in ${where}. My car is: `;
+      wa.href = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+
+      const params = new URLSearchParams();
+      if (service.value) params.set('service', service.value);
+      if (location.value) params.set('location', location.value);
+      cont.href = params.toString() ? `/book-a-service?${params}` : '/book-a-service/';
+    }
+
+    service.addEventListener('change', update);
+    location.addEventListener('change', update);
+    update();
+  });
+</script>

@@ -1,0 +1,368 @@
+---
+import { serviceUrl } from '../lib/urls';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GarageCard from '../components/GarageCard.astro';
+import CtaPair from '../components/CtaPair.astro';
+import RequestStarter from '../components/RequestStarter.astro';
+import QuoteForm from '../islands/QuoteForm.svelte';
+import HowItWorks from '../components/HowItWorks.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import ArticleCards from '../components/ArticleCards.astro';
+import TrustBar from '../components/sections/TrustBar.astro';
+import Testimonials from '../components/sections/Testimonials.astro';
+import FeatureList from '../components/sections/FeatureList.astro';
+import MapEmbed from '../components/sections/MapEmbed.astro';
+import {
+  getCategoriesWithServices,
+  getEmirates,
+  getActiveGarages,
+  getRatings,
+  getFeaturedReviews,
+  getAllServices,
+} from '../lib/queries';
+import { SITE, telLink, NAP, hasPostalAddress, napSchema, phoneDisplay } from '../lib/site';
+import { HOME_FAQS, faqSchema } from '../lib/faqs';
+import { priceLabel } from '../lib/site';
+
+const [categories, emirates, allGarages, testimonials, allServices] = await Promise.all([
+  getCategoriesWithServices(),
+  getEmirates(),
+  getActiveGarages(),
+  getFeaturedReviews(8),
+  getAllServices(),
+]);
+const featured = allGarages.slice(0, 3);
+const ratings = await getRatings(featured.map((g) => g.id));
+
+const serviceOptions = categories.flatMap((c) =>
+  c.services.map((s) => ({ id: s.id, name: s.name, group: c.name })),
+);
+const locationOptions = emirates.map((l) => ({ id: l.id, name: l.name }));
+
+/* The twelve services that lead the grid: the sheet asks for twelve, ordered by demand. */
+const GRID_ORDER = [
+  'car-wash',
+  'minor-service',
+  'major-service',
+  'oil-change',
+  'brake-repair',
+  'ac-repair',
+  'battery-replacement',
+  'tyres-wheels',
+  'wheel-alignment',
+  'detailing',
+  'window-tinting',
+  'mobile-mechanic',
+];
+const gridServices = GRID_ORDER.map((slug) => allServices.find((s) => s.slug === slug)).filter(
+  (s): s is (typeof allServices)[number] => Boolean(s),
+);
+
+const WHY_CARS911 = [
+  {
+    title: 'One request, not five phone calls',
+    detail: 'Describe the job once. Every verified garage near you that does it gets the same description and replies with a written price.',
+  },
+  {
+    title: 'Prices you can actually compare',
+    detail: 'Each quote arrives with the warranty, the turnaround and the price band beside it, so you are comparing the whole offer rather than one number.',
+  },
+  {
+    title: 'Garages that passed an audit',
+    detail: 'Trade licence, insurance, facility inspection, workmanship spot checks and complaint history — 100 points before a workshop can quote at all.',
+  },
+  {
+    title: 'The warranty is in writing',
+    detail: 'Between six and twenty-four months of workmanship cover, stated on the quote before you book rather than promised on the phone.',
+  },
+  {
+    title: 'Free, with no obligation',
+    detail: 'Cars911 charges car owners nothing and takes no cut of your repair. You pay the garage directly for work you approved.',
+  },
+  {
+    title: 'Help when it has already gone wrong',
+    detail: 'Roadside assistance runs 24/7 across every emirate: jump starts, flat tyres, towing and mobile mechanics.',
+  },
+];
+
+/*
+  FAQPage because the homepage answers the same first questions the FAQ page does (§11.5), and
+  AutoRepair/LocalBusiness for the local pack. The address, and only the address, is what the
+  schema is missing: napSchema() returns null until NAP in lib/site.ts is filled in, and the
+  markup drops to an Organization with a service area rather than claiming a location.
+*/
+const address = napSchema();
+const localBusiness: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': address ? 'AutoRepair' : 'Organization',
+  name: SITE.name,
+  url: SITE.url,
+  telephone: SITE.phone,
+  description: SITE.description,
+  areaServed: emirates.map((l) => ({ '@type': 'Place', name: l.name })),
+  ...(address ? { address } : {}),
+  ...(NAP.googleRating && NAP.googleReviewCount
+    ? {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: NAP.googleRating,
+          reviewCount: NAP.googleReviewCount,
+          bestRating: 5,
+        },
+      }
+    : {}),
+  ...(NAP.socials.length > 0 ? { sameAs: NAP.socials.map((s) => s.url) } : {}),
+};
+
+const schema = [localBusiness, faqSchema(HOME_FAQS)];
+---
+
+<BaseLayout
+  title="Car Service in Dubai — compare garage quotes"
+  description="Compare car service and repair quotes from verified garages in Dubai and across the UAE. One request, multiple written prices, no obligation to book."
+  schema={schema}
+>
+  <!--
+    The hero is the request itself. Everything above the fold exists to get two answers and
+    hand them to WhatsApp, which is where the campaigns point and where the conversations
+    actually happen.
+  -->
+  <section class="relative overflow-hidden py-14 md:py-20">
+    <!--
+      The hero art is a CSS background rather than an <img> on purpose. It is decorative brand
+      texture, and an <img> hidden with `display:none` is still downloaded — 79 KB fetched on
+      every phone to show nothing, which cost about a second of LCP when it was markup. A
+      background-image declared inside a min-width media query is never requested below that
+      width. A real hero photograph, if one arrives, belongs in markup with a describing alt.
+    -->
+    <div class="hero-art" aria-hidden="true"></div>
+    <div
+      class="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] bg-gradient-to-r from-ink via-ink/85 to-ink/25 lg:block"
+      aria-hidden="true"
+    ></div>
+
+    <div class="spine relative grid gap-y-10 lg:grid-cols-12 lg:gap-x-16 lg:gap-y-9">
+      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-1">
+        <!-- The H1 names the city because that is what the searches say (audit §8.3). -->
+        <h1 class="display">
+          Car service in Dubai.<br />
+          <span class="said-in-gold">One request, multiple quotes.</span>
+        </h1>
+        <p class="lede mt-7 text-white/70">
+          Tell us what your car needs. Verified garages across the UAE reply with written prices,
+          warranties and turnaround times.
+        </p>
+      </div>
+
+      <!-- On a phone this sits directly under the headline: it is the point of the page. -->
+      <div class="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1">
+        <RequestStarter services={serviceOptions} locations={locationOptions} />
+      </div>
+
+      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:self-end">
+        <dl class="flex flex-wrap gap-x-12 gap-y-5 border-t border-rule pt-7">
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Cost to you</dt>
+            <dd class="title-sm mt-1">Free</dd>
+          </div>
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Quotes usually arrive</dt>
+            <dd class="title-sm mt-1">Within the hour</dd>
+          </div>
+          <div>
+            <dt class="text-[0.9375rem] text-graphite">Obligation to book</dt>
+            <dd class="title-sm mt-1">None</dd>
+          </div>
+        </dl>
+
+        <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+          <a href={telLink()} class="btn btn-quiet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.25 1Z" />
+            </svg>
+            Call Us
+          </a>
+          <a href="/rsa/" class="flex items-center gap-2 font-medium text-alert-bright hover:underline hover:underline-offset-4">
+            <span class="size-1.5 rounded-full bg-alert-bright" aria-hidden="true"></span>
+            Broken down right now?
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <TrustBar />
+
+  <section class="spine band">
+    <div class="grid gap-12 md:grid-cols-2 md:gap-10">
+      <div>
+        <img
+          src="/brand/old-way.webp"
+          alt="A driver waits in a dim workshop while a mechanic works under the bonnet."
+          width="540"
+          height="432"
+          class="w-full"
+          loading="lazy"
+        />
+        <h2 class="title mt-7 text-white/45">Getting a car fixed today</h2>
+        <ul class="mt-4 max-w-sm space-y-3 text-white/55">
+          <li>Call five garages and explain the problem five times.</li>
+          <li>Hear one price on the phone and read another on the invoice.</li>
+          <li>Hope the warranty exists when you need it.</li>
+        </ul>
+      </div>
+      <div>
+        <img
+          src="/brand/cars911-way.webp"
+          alt="The same driver reads garage quotes on his phone beside his car on the Dubai waterfront."
+          width="540"
+          height="432"
+          class="w-full"
+          loading="lazy"
+        />
+        <h2 class="title said-in-gold mt-7">Getting a car fixed on Cars911</h2>
+        <ul class="mt-4 max-w-sm space-y-3 text-white/85">
+          <li>Describe the job once, in your own words.</li>
+          <li>Read written quotes with the warranty on them.</li>
+          <li>Compare, then book the garage you trust.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="spine band">
+    <h2 class="title">Why Cars911</h2>
+    <p class="lede measure mt-4">
+      The comparison above is the promise. These are the six things that make it hold.
+    </p>
+    <FeatureList items={WHY_CARS911} columns={3} class="mt-2" />
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">How it works</h2>
+      <a href="/about/how-it-works/" class="link">The longer version</a>
+    </div>
+    <HowItWorks class="mt-10" />
+  </section>
+
+  <section id="quote" class="spine band scroll-mt-16">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-5">
+        <h2 class="title">Rather type it out?</h2>
+        <p class="lede mt-4">
+          Add your car and a description of the problem and the quotes come back sharper. Three
+          short steps, no account and no card.
+        </p>
+        <p class="mt-6 max-w-sm text-[0.9375rem] text-graphite">
+          Every garage passes a 100-point audit before it can quote. Warranty and turnaround are
+          written on the quote rather than promised on the phone.
+        </p>
+      </div>
+      <div class="lg:col-span-7">
+        <!--
+          This form sits well below the fold — the hero's RequestStarter is what the page opens
+          with — so it hydrates on approach rather than on load, keeping the Svelte runtime off
+          the critical path. On /book-a-service/ the same form is the point of the page and
+          stays client:load.
+        -->
+        <QuoteForm client:visible services={serviceOptions} locations={locationOptions} />
+      </div>
+    </div>
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">What does your car need?</h2>
+      <a href="/services/" class="link">All {allServices.length} services</a>
+    </div>
+    <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {gridServices.map((s) => (
+        <li class="sheet flex flex-col p-5">
+          <p class="text-[0.9375rem] text-gold-light">{s.category.name}</p>
+          <h3 class="title-sm mt-1.5">
+            <a href={serviceUrl(s)} class="hover:text-gold-light">{s.name}</a>
+          </h3>
+          <p class="mt-2.5 flex-1 text-[0.9375rem] leading-relaxed text-graphite">{s.excerpt}</p>
+          <p class="mt-4 text-[0.9375rem] font-medium">{priceLabel(s.priceFromAed, s.priceToAed)}</p>
+        </li>
+      ))}
+    </ul>
+    <ul class="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+      {categories.map((c) => (
+        <li>
+          <a href={`/services/${c.slug}/`} class="link text-[0.9375rem]">All {c.name.toLowerCase()} services</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-4">
+      <h2 class="title">Garages in the network</h2>
+      <a href="/garages/" class="link">Browse all garages</a>
+    </div>
+    <div class="mt-10 grid gap-6 md:grid-cols-3">
+      {featured.map((g) => (
+        <GarageCard garage={g} rating={ratings.get(g.id)} />
+      ))}
+    </div>
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">What drivers say</h2>
+      <a href="/garages/" class="link">Browse garage profiles</a>
+    </div>
+    <Testimonials reviews={testimonials} class="mt-10" />
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">Where we cover</h2>
+      <a href="/locations/" class="link">All areas</a>
+    </div>
+    <p class="lede measure mt-4">
+      Garages, mobile mechanics and 24/7 roadside units across all seven emirates, with the
+      densest coverage in Dubai.
+    </p>
+    <MapEmbed query="Dubai, United Arab Emirates" label="Cars911 service area across the UAE" class="mt-8" />
+  </section>
+
+  <section class="spine band">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-4">
+        <h2 class="title">Questions people ask first</h2>
+        <p class="lede mt-4 text-white/70">
+          The short answers. The rest are on the <a href="/about/faq/" class="link text-white">FAQ page</a>.
+        </p>
+      </div>
+      <div class="lg:col-span-8">
+        <FaqAccordion faqs={HOME_FAQS} />
+      </div>
+    </div>
+  </section>
+
+  <section class="spine band">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h2 class="title">From the workshop notes</h2>
+      <a href="/blog/" class="link">All guides</a>
+    </div>
+    <ArticleCards limit={3} class="mt-10" />
+  </section>
+
+  <section class="spine band">
+    <h2 class="title">Covering every emirate</h2>
+    <p class="lede mt-4 text-white/70">
+      From Al Quoz workshops to mobile mechanics in Abu Dhabi. Find garages where you are.
+    </p>
+    <ul class="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+      {emirates.map((l) => (
+        <li>
+          <a href={`/locations/${l.slug}/`} class="subtitle text-white/85 hover:text-gold-light">{l.name}</a>
+        </li>
+      ))}
+    </ul>
+    <CtaPair tone="dark" class="mt-12" />
+  </section>
+</BaseLayout>

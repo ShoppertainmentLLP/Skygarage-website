@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { db } from '../../db/client';
+
+const [corporate, partners] = await Promise.all([
+  db.query.corporateLeads.findMany({ orderBy: (l, { desc }) => desc(l.createdAt), limit: 100 }),
+  db.query.partnerLeads.findMany({ orderBy: (l, { desc }) => desc(l.createdAt), limit: 100 }),
+]);
+---
+
+<BaseLayout title="Leads" description="Cars911 administration.">
+  <div class="spine py-10">
+    <a href="/admin/" class="text-sm font-medium text-gold-light hover:underline">Back to dashboard</a>
+    <h1 class="mt-2 title">Leads</h1>
+
+    <h2 class="mt-8 title-sm">Corporate</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-160 border-collapse bg-surface text-sm">
+        <thead>
+          <tr>
+            {['When', 'Company', 'Contact', 'Fleet', 'Message'].map((h) => (
+              <th class="border border-rule bg-surface-raise p-2.5 text-left font-medium">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {corporate.map((l) => (
+            <tr>
+              <td class="border border-rule p-2.5 whitespace-nowrap">{l.createdAt.toLocaleString('en-AE')}</td>
+              <td class="border border-rule p-2.5 font-medium">{l.company}</td>
+              <td class="border border-rule p-2.5">
+                {l.contactName}
+                <span class="block text-graphite">{l.phone} · {l.email}</span>
+              </td>
+              <td class="border border-rule p-2.5">{l.fleetSize || '—'}</td>
+              <td class="border border-rule p-2.5 max-w-70">{l.message || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="mt-10 title-sm">Partner applications</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-160 border-collapse bg-surface text-sm">
+        <thead>
+          <tr>
+            {['When', 'Garage', 'Contact', 'Area', 'Message'].map((h) => (
+              <th class="border border-rule bg-surface-raise p-2.5 text-left font-medium">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {partners.map((l) => (
+            <tr>
+              <td class="border border-rule p-2.5 whitespace-nowrap">{l.createdAt.toLocaleString('en-AE')}</td>
+              <td class="border border-rule p-2.5 font-medium">{l.garageName}</td>
+              <td class="border border-rule p-2.5">
+                {l.contactName}
+                <span class="block text-graphite">{l.phone}{l.email ? ` · ${l.email}` : ''}</span>
+              </td>
+              <td class="border border-rule p-2.5">{l.area || '—'}</td>
+              <td class="border border-rule p-2.5 max-w-70">{l.message || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</BaseLayout>
